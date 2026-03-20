@@ -1,5 +1,7 @@
 // app.js - Funciones globales con persistencia garantizada
 
+// ==================== UTILIDADES BÁSICAS ====================
+
 // Verificar si localStorage está disponible
 function isLocalStorageAvailable() {
     try {
@@ -36,7 +38,159 @@ function cargarDatos(clave, defaultValue = []) {
     }
 }
 
-// Inicializar datos de ejemplo (solo si no existen)
+// ==================== GESTIÓN DE ENTRADAS DE STOCK ====================
+
+/**
+ * Registra una entrada de stock (cuando se agrega stock a un producto)
+ * @param {string} productoId - ID del producto
+ * @param {number} cantidadAnterior - Stock antes del cambio
+ * @param {number} cantidadNueva - Stock después del cambio
+ * @param {string} motivo - Razón del cambio (edición, compra, ajuste, etc.)
+ */
+async function registrarEntradaStock(productoId, cantidadAnterior, cantidadNueva, motivo) {
+    if (cantidadNueva > cantidadAnterior) {
+        // Si existe storage global, usarlo
+        if (window.storage && typeof window.storage.getData === 'function') {
+            const entradas = await window.storage.getData('entradas_stock') || [];
+            entradas.push({
+                id: Date.now().toString(),
+                productoId: productoId,
+                cantidad: cantidadNueva - cantidadAnterior,
+                stockAnterior: cantidadAnterior,
+                stockNuevo: cantidadNueva,
+                fecha: new Date().toISOString(),
+                motivo: motivo
+            });
+            await window.storage.saveData('entradas_stock', entradas);
+        } else {
+            // Fallback a localStorage
+            let entradas = cargarDatos('entradas_stock', []);
+            entradas.push({
+                id: Date.now().toString(),
+                productoId: productoId,
+                cantidad: cantidadNueva - cantidadAnterior,
+                stockAnterior: cantidadAnterior,
+                stockNuevo: cantidadNueva,
+                fecha: new Date().toISOString(),
+                motivo: motivo
+            });
+            guardarDatos('entradas_stock', entradas);
+        }
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Obtiene todas las entradas de stock
+ * @returns {Promise<Array>} Lista de entradas de stock
+ */
+async function obtenerEntradasStock() {
+    if (window.storage && typeof window.storage.getData === 'function') {
+        return await window.storage.getData('entradas_stock') || [];
+    }
+    return cargarDatos('entradas_stock', []);
+}
+
+/**
+ * Obtiene las entradas de stock por producto
+ * @param {string} productoId - ID del producto
+ * @returns {Promise<Array>} Lista de entradas del producto
+ */
+async function obtenerEntradasPorProducto(productoId) {
+    const entradas = await obtenerEntradasStock();
+    return entradas.filter(e => e.productoId === productoId);
+}
+
+/**
+ * Obtiene las entradas de stock por fecha
+ * @param {string} fecha - Fecha en formato YYYY-MM-DD
+ * @returns {Promise<Array>} Lista de entradas en esa fecha
+ */
+async function obtenerEntradasPorFecha(fecha) {
+    const entradas = await obtenerEntradasStock();
+    return entradas.filter(e => e.fecha.split('T')[0] === fecha);
+}
+
+// ==================== GESTIÓN DE GASTOS ====================
+
+/**
+ * Registra un gasto del negocio
+ * @param {Object} gasto - Objeto con datos del gasto
+ * @returns {Promise<boolean>}
+ */
+async function registrarGasto(gasto) {
+    if (window.storage && typeof window.storage.getData === 'function') {
+        const gastos = await window.storage.getData('gastos') || [];
+        gastos.push({
+            id: Date.now().toString(),
+            fecha: new Date().toISOString(),
+            ...gasto
+        });
+        await window.storage.saveData('gastos', gastos);
+    } else {
+        let gastos = cargarDatos('gastos', []);
+        gastos.push({
+            id: Date.now().toString(),
+            fecha: new Date().toISOString(),
+            ...gasto
+        });
+        guardarDatos('gastos', gastos);
+    }
+    return true;
+}
+
+/**
+ * Obtiene gastos por período
+ * @param {Date} inicio - Fecha inicio
+ * @param {Date} fin - Fecha fin
+ * @returns {Promise<Array>}
+ */
+async function obtenerGastosPorPeriodo(inicio, fin) {
+    let gastos = [];
+    if (window.storage && typeof window.storage.getData === 'function') {
+        gastos = await window.storage.getData('gastos') || [];
+    } else {
+        gastos = cargarDatos('gastos', []);
+    }
+    return gastos.filter(g => {
+        const fechaGasto = new Date(g.fecha);
+        return fechaGasto >= inicio && fechaGasto <= fin;
+    });
+}
+
+/**
+ * Obtiene balance neto (ventas - gastos) por período
+ * @param {Date} inicio - Fecha inicio
+ * @param {Date} fin - Fecha fin
+ * @returns {Promise<Object>}
+ */
+async function obtenerBalanceNeto(inicio, fin) {
+    let ventas = [];
+    if (window.storage && typeof window.storage.getData === 'function') {
+        ventas = await window.storage.getData('ventas');
+    } else {
+        ventas = cargarDatos('ventas', []);
+    }
+    
+    const ventasPeriodo = ventas.filter(v => {
+        const fechaVenta = new Date(v.fecha);
+        return fechaVenta >= inicio && fechaVenta <= fin;
+    });
+    const totalVentas = ventasPeriodo.reduce((sum, v) => sum + v.total, 0);
+    
+    const gastos = await obtenerGastosPorPeriodo(inicio, fin);
+    const totalGastos = gastos.reduce((sum, g) => sum + g.monto, 0);
+    
+    return {
+        ventas: totalVentas,
+        gastos: totalGastos,
+        balance: totalVentas - totalGastos
+    };
+}
+
+// ==================== INICIALIZACIÓN DE DATOS DE EJEMPLO ====================
+
 function inicializarDatosEjemplo() {
     if (!isLocalStorageAvailable()) {
         alert('⚠️ Tu navegador no soporta almacenamiento local. La app no funcionará correctamente.');
@@ -44,7 +198,7 @@ function inicializarDatosEjemplo() {
     }
     
     // Productos
-    const productos = cargarDatos('productos');
+    let productos = cargarDatos('productos');
     if (productos.length === 0) {
         const productosEjemplo = [
             { id: '1', codigo: '7501000012345', nombre: 'Café molido 500g', precio: 89.90, costo: 65.00, stock: 25, stockMinimo: 10, categoria: 'Alimentos' },
@@ -60,7 +214,7 @@ function inicializarDatosEjemplo() {
     }
     
     // Clientes
-    const clientes = cargarDatos('clientes');
+    let clientes = cargarDatos('clientes');
     if (clientes.length === 0) {
         const clientesEjemplo = [
             { id: 'c1', nombre: 'María González', telefono: '555-1234', deuda: 150.00, fechaRegistro: new Date().toISOString() },
@@ -71,7 +225,7 @@ function inicializarDatosEjemplo() {
     }
     
     // Ventas
-    const ventas = cargarDatos('ventas');
+    let ventas = cargarDatos('ventas');
     if (ventas.length === 0) {
         const ventasEjemplo = [
             {
@@ -103,70 +257,53 @@ function inicializarDatosEjemplo() {
     }
     
     // Pagos
-    const pagos = cargarDatos('pagos');
+    let pagos = cargarDatos('pagos');
     if (pagos.length === 0) {
         guardarDatos('pagos', []);
     }
     
     // Caja diaria
-    const cajaDiaria = cargarDatos('caja_diaria');
+    let cajaDiaria = cargarDatos('caja_diaria');
     if (cajaDiaria.length === 0) {
         guardarDatos('caja_diaria', []);
     }
     
     // Cierres de caja
-    const cierresCaja = cargarDatos('cierres_caja');
+    let cierresCaja = cargarDatos('cierres_caja');
     if (cierresCaja.length === 0) {
         guardarDatos('cierres_caja', []);
     }
-}
-
-// Funciones para gestión financiera
-async function registrarGasto(gasto) {
-    const gastos = await storage.getData('gastos') || [];
-    gastos.push({
-        id: Date.now().toString(),
-        fecha: new Date().toISOString(),
-        ...gasto
-    });
-    await storage.saveData('gastos', gastos);
-    return true;
-}
-
-async function obtenerGastosPorPeriodo(inicio, fin) {
-    const gastos = await storage.getData('gastos') || [];
-    return gastos.filter(g => {
-        const fechaGasto = new Date(g.fecha);
-        return fechaGasto >= inicio && fechaGasto <= fin;
-    });
-}
-
-async function obtenerBalanceNeto(inicio, fin) {
-    const ventas = await storage.getData('ventas');
-    const ventasPeriodo = ventas.filter(v => {
-        const fechaVenta = new Date(v.fecha);
-        return fechaVenta >= inicio && fechaVenta <= fin;
-    });
-    const totalVentas = ventasPeriodo.reduce((sum, v) => sum + v.total, 0);
     
-    const gastos = await obtenerGastosPorPeriodo(inicio, fin);
-    const totalGastos = gastos.reduce((sum, g) => sum + g.monto, 0);
+    // Entradas de stock
+    let entradasStock = cargarDatos('entradas_stock');
+    if (entradasStock.length === 0) {
+        guardarDatos('entradas_stock', []);
+    }
     
-    return {
-        ventas: totalVentas,
-        gastos: totalGastos,
-        balance: totalVentas - totalGastos
-    };
+    // Gastos
+    let gastos = cargarDatos('gastos');
+    if (gastos.length === 0) {
+        guardarDatos('gastos', []);
+    }
 }
 
-// Exportar funciones globales
+// ==================== EXPORTAR FUNCIONES GLOBALES ====================
+
 window.guardarDatos = guardarDatos;
 window.cargarDatos = cargarDatos;
+window.registrarEntradaStock = registrarEntradaStock;
+window.obtenerEntradasStock = obtenerEntradasStock;
+window.obtenerEntradasPorProducto = obtenerEntradasPorProducto;
+window.obtenerEntradasPorFecha = obtenerEntradasPorFecha;
 window.registrarGasto = registrarGasto;
+window.obtenerGastosPorPeriodo = obtenerGastosPorPeriodo;
 window.obtenerBalanceNeto = obtenerBalanceNeto;
 
-// Inicializar
+// ==================== INICIALIZACIÓN ====================
+
 inicializarDatosEjemplo();
+
+// ==================== SERVICE WORKER Y MODO OFFLINE ====================
 
 // Mostrar estado de conexión (opcional)
 window.addEventListener('load', () => {
@@ -201,4 +338,26 @@ window.addEventListener('load', () => {
                 console.log('Error al registrar Service Worker:', error);
             });
     }
+});
+
+// Escuchar cambios en la conexión
+window.addEventListener('online', () => {
+    console.log('📶 Conexión restaurada');
+    const indicator = document.createElement('div');
+    indicator.style.position = 'fixed';
+    indicator.style.bottom = '10px';
+    indicator.style.right = '10px';
+    indicator.style.background = 'var(--success)';
+    indicator.style.color = 'white';
+    indicator.style.padding = '4px 8px';
+    indicator.style.borderRadius = '20px';
+    indicator.style.fontSize = '10px';
+    indicator.style.zIndex = '1000';
+    indicator.innerHTML = '✅ Conexión restaurada';
+    document.body.appendChild(indicator);
+    setTimeout(() => indicator.remove(), 3000);
+});
+
+window.addEventListener('offline', () => {
+    console.log('📡 Conexión perdida - Modo offline');
 });
