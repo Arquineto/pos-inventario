@@ -8,30 +8,67 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .modal {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        /* Estilos para vista de listado */
+        .products-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 20px;
         }
-        .modal-content {
-            background: var(--bg-card); border-radius: 20px; max-width: 500px; width: 90%;
-            max-height: 90vh; overflow-y: auto; padding: 20px;
+        .product-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
-        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
-        .payment-method-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--border-color); }
-        .payment-method-input { width: 120px; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); text-align: right; }
-        .payment-total-row { display: flex; justify-content: space-between; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; margin-top: 12px; font-weight: bold; }
-        .payment-difference { padding: 12px; border-radius: 8px; margin-top: 12px; text-align: center; }
-        .payment-difference.positive { background: rgba(16,185,129,0.2); color: var(--success); }
-        .payment-difference.negative { background: rgba(239,68,68,0.2); color: var(--danger); }
-        .filtro-categoria { padding: 6px 12px; border-radius: 20px; background: var(--bg-tertiary); border: none; cursor: pointer; }
-        .filtro-categoria.active { background: var(--primary); color: white; }
-        .product-category { font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px; }
-        .btn-outline { background: transparent; border: 1px solid var(--border-color); }
-        .btn-cierre-dia { background: var(--warning); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-        .btn-cierre-dia:hover { background: #d97706; }
-        .cierre-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-        .cierre-modal-content { background: var(--bg-card); border-radius: 20px; max-width: 400px; width: 90%; padding: 24px; text-align: center; }
+        .product-list-item:hover {
+            background: var(--bg-tertiary);
+            transform: translateX(4px);
+        }
+        .product-list-item .product-info {
+            flex: 1;
+        }
+        .product-list-item .product-name {
+            font-weight: 600;
+        }
+        .product-list-item .product-code {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        .product-list-item .product-price {
+            font-weight: bold;
+            color: var(--primary);
+            margin: 0 16px;
+        }
+        .product-list-item .product-stock {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            min-width: 80px;
+            text-align: right;
+        }
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .view-btn {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .view-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -57,13 +94,10 @@
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <main class="main-content">
-            <div class="mobile-header">
-                <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
-                <h2><i class="fas fa-cash-register"></i> Punto de Venta</h2>
-                <button id="btnCierreDia" class="btn-cierre-dia"><i class="fas fa-lock"></i> Cerrar día</button>
-            </div>
+            <div class="mobile-header"><button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button><h2><i class="fas fa-cash-register"></i> Punto de Venta</h2><button id="btnCierreDia" class="btn-cierre-dia" style="background:var(--warning); color:white; border:none; padding:8px 16px; border-radius:20px;"><i class="fas fa-lock"></i> Cerrar día</button></div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Columna izquierda: Productos -->
                 <div class="terminal-card">
                     <h2><i class="fas fa-search"></i> Productos</h2>
                     <div style="display: flex; gap: 8px; margin-bottom: 16px;">
@@ -71,19 +105,27 @@
                         <input type="text" id="codigoBarras" class="terminal-input" style="width:150px;" placeholder="📷 Código">
                         <button id="btnBuscarCodigo" class="btn-terminal">Buscar</button>
                     </div>
-                    <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;" id="categoriasFiltro"></div>
-                    <div id="productosGrid" class="products-grid" style="max-height: 500px; overflow-y: auto;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="categoriasFiltro"></div>
+                        <div class="view-toggle">
+                            <button class="view-btn active" data-view="grid"><i class="fas fa-th"></i> Grid</button>
+                            <button class="view-btn" data-view="list"><i class="fas fa-list"></i> Lista</button>
+                        </div>
+                    </div>
+                    <div id="productosContainer" class="products-grid"></div>
                 </div>
                 
+                <!-- Columna derecha: Carrito -->
                 <div>
                     <div class="terminal-card">
                         <h2><i class="fas fa-shopping-cart"></i> Carrito</h2>
-                        <div id="carritoLista" style="max-height: 300px; overflow-y: auto; min-height: 150px;"></div>
+                        <div id="carritoLista" style="max-height: 400px; overflow-y: auto; min-height: 200px;"></div>
                         <div class="cart-total" style="display: flex; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--border-color);">
-                            <strong>Total:</strong><strong style="font-size:1.5rem; color:var(--primary);">$<span id="totalCarrito">0</span></strong>
+                            <strong>Total:</strong>
+                            <strong style="font-size:1.5rem; color:var(--primary);">$<span id="totalCarrito">0</span></strong>
                         </div>
                         <div style="display: flex; gap: 12px; margin-top: 12px;">
-                            <button id="btnLimpiarCarrito" class="btn-terminal btn-outline" style="flex:1;"><i class="fas fa-trash"></i> Limpiar</button>
+                            <button id="btnLimpiarCarrito" class="btn-terminal" style="flex:1; background:var(--bg-tertiary);"><i class="fas fa-trash"></i> Limpiar</button>
                             <button id="btnConfirmarVenta" class="btn-terminal btn-terminal-primary" style="flex:1;"><i class="fas fa-check"></i> Confirmar</button>
                         </div>
                     </div>
@@ -106,7 +148,7 @@
                     <div class="payment-total-row"><span>Total pagado:</span><span id="totalPagado">$0</span></div>
                     <div id="diferenciaPago" class="payment-difference"></div>
                     <div class="btn-payment-action" style="display: flex; gap: 12px; margin-top: 12px;">
-                        <button id="btnResetPagos" class="btn-terminal btn-outline">Resetear</button>
+                        <button id="btnResetPagos" class="btn-terminal">Resetear</button>
                         <button id="btnCompletarVenta" class="btn-terminal btn-terminal-primary">Completar</button>
                     </div>
                 </div>
@@ -134,7 +176,7 @@
         let carrito = [];
         let currentFacturaNumero = 1;
         let productos = [];
-        let categorias = [];
+        let currentView = 'grid';
 
         async function cargarNumeroFactura() {
             const saved = localStorage.getItem('ultimo_numero_factura');
@@ -144,7 +186,7 @@
 
         async function cargarProductos() {
             productos = await storage.getData('productos');
-            categorias = [...new Set(productos.map(p => p.categoria).filter(c => c))];
+            const categorias = [...new Set(productos.map(p => p.categoria).filter(c => c))];
             const filtroDiv = document.getElementById('categoriasFiltro');
             filtroDiv.innerHTML = '<button class="filtro-categoria active" data-categoria="todos">Todos</button>' + categorias.map(cat => `<button class="filtro-categoria" data-categoria="${cat}">${cat}</button>`).join('');
             document.querySelectorAll('.filtro-categoria').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('.filtro-categoria').forEach(b => b.classList.remove('active')); btn.classList.add('active'); filtrarProductos(); }));
@@ -156,9 +198,21 @@
             const catActiva = document.querySelector('.filtro-categoria.active')?.dataset.categoria || 'todos';
             let filtrados = productos.filter(p => p.nombre.toLowerCase().includes(busqueda) || (p.codigo && p.codigo.toLowerCase().includes(busqueda)));
             if (catActiva !== 'todos') filtrados = filtrados.filter(p => p.categoria === catActiva);
-            const grid = document.getElementById('productosGrid');
-            if (!filtrados.length) { grid.innerHTML = '<div class="empty-state">📭 No hay productos</div>'; return; }
-            grid.innerHTML = filtrados.map(p => `<div class="product-card-grid" onclick="agregarAlCarrito('${p.id}')">${p.stock <= (p.stockMinimo||5) ? '<div class="stock-badge">⚠️ Stock bajo</div>' : ''}<div class="product-icon"><i class="fas fa-box"></i></div><div class="product-name">${p.nombre}</div><div class="product-price">$${p.precio.toFixed(2)}</div><div class="product-stock">Stock: ${p.stock} uds</div>${p.categoria ? `<div class="product-category">${p.categoria}</div>` : ''}</div>`).join('');
+            
+            const container = document.getElementById('productosContainer');
+            if (!filtrados.length) { container.innerHTML = '<div class="empty-state">📭 No hay productos</div>'; return; }
+            
+            if (currentView === 'grid') {
+                container.className = 'products-grid';
+                container.innerHTML = filtrados.map(p => `<div class="product-card-grid" onclick="agregarAlCarrito('${p.id}')">${p.stock <= (p.stockMinimo||5) ? '<div class="stock-badge">⚠️ Stock bajo</div>' : ''}<div class="product-icon"><i class="fas fa-box"></i></div><div class="product-name">${p.nombre}</div><div class="product-price">$${p.precio.toFixed(2)}</div><div class="product-stock">Stock: ${p.stock} uds</div>${p.categoria ? `<div class="product-category">${p.categoria}</div>` : ''}</div>`).join('');
+            } else {
+                container.className = 'products-list';
+                container.innerHTML = filtrados.map(p => `<div class="product-list-item" onclick="agregarAlCarrito('${p.id}')">
+                    <div class="product-info"><div class="product-name">${p.nombre}</div><div class="product-code">${p.codigo || 'Sin código'}</div></div>
+                    <div class="product-price">$${p.precio.toFixed(2)}</div>
+                    <div class="product-stock">Stock: ${p.stock}</div>
+                </div>`).join('');
+            }
         }
 
         function agregarAlCarrito(id) {
@@ -181,6 +235,16 @@
         }
 
         document.getElementById('btnLimpiarCarrito').addEventListener('click', () => { if(confirm('¿Limpiar carrito?')) { carrito=[]; actualizarCarrito(); } });
+
+        // Vista toggle
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentView = btn.dataset.view;
+                filtrarProductos();
+            });
+        });
 
         const modal = document.getElementById('modalPago');
         document.getElementById('btnConfirmarVenta').addEventListener('click', async () => {
@@ -241,7 +305,6 @@
         document.getElementById('btnBuscarCodigo').addEventListener('click',()=>{ const cod=document.getElementById('codigoBarras').value.trim(); const p=productos.find(p=>p.codigo===cod); if(p) agregarAlCarrito(p.id); else alert('Producto no encontrado'); document.getElementById('codigoBarras').value=''; });
         document.getElementById('codigoBarras').addEventListener('keypress',e=>{ if(e.key==='Enter') document.getElementById('btnBuscarCodigo').click(); });
 
-        // Cierre de día
         const cierreModal = document.getElementById('modalCierreDia');
         document.getElementById('btnCierreDia').addEventListener('click',()=>cierreModal.style.display='flex');
         document.getElementById('btnConfirmarCierre').addEventListener('click',async()=>{
