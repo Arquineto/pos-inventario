@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Cierre de Caja - POS Terminal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>POS_TERMINAL<span class="terminal-cursor"></span></h1>
+                <small>Cierre de Caja</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a href="ventas.html" class="nav-item"><i class="fas fa-cash-register"></i><span>Punto de Venta</span></a>
+                <a href="inventario.html" class="nav-item"><i class="fas fa-boxes"></i><span>Inventario</span></a>
+                <a href="clientes.html" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
+                <a href="reportes.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Reportes</span></a>
+                <a href="ventas-dia.html" class="nav-item"><i class="fas fa-chart-simple"></i><span>IPV del Día</span></a>
+                <a href="cierre-caja.html" class="nav-item active"><i class="fas fa-calculator"></i><span>Cierre de Caja</span></a>
+                <a href="reporte-iva.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i><span>Reporte IVA</span></a>
+                <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="theme-toggle" id="themeToggle">
+                    <span><i class="fas fa-moon"></i> Modo oscuro</span>
+                    <span id="themeStatus">🌙</span>
+                </div>
+                <div class="color-options">
+                    <div class="color-dot" data-color="default" style="background: #2563eb;"></div>
+                    <div class="color-dot" data-color="emerald" style="background: #10b981;"></div>
+                    <div class="color-dot" data-color="violet" style="background: #8b5cf6;"></div>
+                    <div class="color-dot" data-color="rose" style="background: #f43f5e;"></div>
+                    <div class="color-dot" data-color="amber" style="background: #f59e0b;"></div>
+                </div>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <main class="main-content">
+            <div class="mobile-header">
+                <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+                <h2><i class="fas fa-calculator"></i> Cierre de Caja</h2>
+                <div></div>
+            </div>
+
+            <!-- Selector de fecha -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-calendar"></i> Seleccionar fecha</h2>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <input type="date" id="fechaCierre" class="terminal-input" style="width: auto;">
+                    <button id="btnCargarDia" class="btn-terminal"><i class="fas fa-search"></i> Cargar</button>
+                    <button id="btnHoy" class="btn-terminal"><i class="fas fa-sun"></i> Hoy</button>
+                </div>
+            </div>
+
+            <!-- Resumen del día -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-chart-line"></i> Resumen del día</h2>
+                <div id="resumenDia" class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    <!-- Cargado dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Detalle de ventas del día -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-receipt"></i> Ventas del día</h2>
+                <div id="ventasDia" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Ventas cargadas -->
+                </div>
+            </div>
+
+            <!-- Conteo de efectivo físico -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-money-bill-wave"></i> Conteo de efectivo físico</h2>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                    <div><label>Billetes de $500</label><input type="number" id="billete500" class="terminal-input" value="0" min="0"></div>
+                    <div><label>Billetes de $200</label><input type="number" id="billete200" class="terminal-input" value="0" min="0"></div>
+                    <div><label>Billetes de $100</label><input type="number" id="billete100" class="terminal-input" value="0" min="0"></div>
+                    <div><label>Billetes de $50</label><input type="number" id="billete50" class="terminal-input" value="0" min="0"></div>
+                    <div><label>Billetes de $20</label><input type="number" id="billete20" class="terminal-input" value="0" min="0"></div>
+                    <div><label>Monedas</label><input type="number" id="monedas" class="terminal-input" value="0" min="0" step="0.01"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
+                    <strong>Total efectivo contado:</strong>
+                    <strong id="totalContado" style="font-size: 1.2rem;">$0</strong>
+                </div>
+                <button id="btnCalcularDiferencia" class="btn-terminal btn-terminal-primary" style="margin-top: 16px;">
+                    <i class="fas fa-calculator"></i> Calcular diferencia
+                </button>
+            </div>
+
+            <!-- Resultado de cierre -->
+            <div id="panelDiferencia" class="terminal-card" style="display: none;">
+                <h2><i class="fas fa-chart-line"></i> Resultado del cierre</h2>
+                <div id="resultadoCierre"></div>
+                <button id="btnCerrarDia" class="btn-terminal btn-terminal-primary" style="margin-top: 16px; background: var(--warning);">
+                    <i class="fas fa-lock"></i> Cerrar día y comenzar nuevo
+                </button>
+            </div>
+
+            <!-- Historial de cierres -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-history"></i> Historial de cierres</h2>
+                <div id="historialCierres" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Historial cargado -->
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 12px;">
+                    <button id="btnExportarHistorial" class="btn-terminal"><i class="fas fa-file-excel"></i> Exportar historial</button>
+                    <button id="btnExportarPDF" class="btn-terminal"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="storage-manager.js"></script>
+    <script>
+        let cajaDiaria = [];
+        let ventas = [];
+        let fechaActual = new Date().toISOString().split('T')[0];
+
+        async function cargarDatos() {
+            cajaDiaria = await storage.getData('caja_diaria');
+            ventas = await storage.getData('ventas');
+        }
+
+        function calcularTotalContado() {
+            const billete500 = parseInt(document.getElementById('billete500').value) || 0;
+            const billete200 = parseInt(document.getElementById('billete200').value) || 0;
+            const billete100 = parseInt(document.getElementById('billete100').value) || 0;
+            const billete50 = parseInt(document.getElementById('billete50').value) || 0;
+            const billete20 = parseInt(document.getElementById('billete20').value) || 0;
+            const monedas = parseFloat(document.getElementById('monedas').value) || 0;
+
+            const total = (billete500 * 500) + (billete200 * 200) + (billete100 * 100) + 
+                         (billete50 * 50) + (billete20 * 20) + monedas;
+            document.getElementById('totalContado').textContent = `$${total.toFixed(2)}`;
+            return total;
+        }
+
+        document.getElementById('billete500').addEventListener('input', calcularTotalContado);
+        document.getElementById('billete200').addEventListener('input', calcularTotalContado);
+        document.getElementById('billete100').addEventListener('input', calcularTotalContado);
+        document.getElementById('billete50').addEventListener('input', calcularTotalContado);
+        document.getElementById('billete20').addEventListener('input', calcularTotalContado);
+        document.getElementById('monedas').addEventListener('input', calcularTotalContado);
+
+        async function cargarDia(fecha) {
+            await cargarDatos();
+            fechaActual = fecha;
+            document.getElementById('fechaCierre').value = fecha;
+
+            const diaCaja = cajaDiaria.find(d => d.fecha === fecha) || { 
+                fecha, ventas: [], total_efectivo: 0, total_tarjeta: 0, 
+                total_transferencia: 0, total_credito: 0, total_ventas: 0 
+            };
+            const ventasDelDia = ventas.filter(v => v.fecha.split('T')[0] === fecha);
+
+            // Resumen
+            const resumen = document.getElementById('resumenDia');
+            resumen.innerHTML = `
+                <div class="stat-box" style="background: var(--bg-tertiary); padding: 16px; border-radius: 12px; text-align: center;">
+                    <i class="fas fa-dollar-sign" style="font-size: 1.5rem; color: var(--success);"></i>
+                    <h4>Total ventas</h4>
+                    <p style="font-size: 1.2rem; font-weight: bold;">$${diaCaja.total_ventas.toFixed(2)}</p>
+                </div>
+                <div class="stat-box" style="background: var(--bg-tertiary); padding: 16px; border-radius: 12px; text-align: center;">
+                    <i class="fas fa-receipt" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <h4>N° ventas</h4>
+                    <p style="font-size: 1.2rem; font-weight: bold;">${ventasDelDia.length}</p>
+                </div>
+                <div class="stat-box" style="background: var(--bg-tertiary); padding: 16px; border-radius: 12px; text-align: center;">
+                    <i class="fas fa-money-bill-wave" style="font-size: 1.5rem;"></i>
+                    <h4>Efectivo</h4>
+                    <p>$${diaCaja.total_efectivo.toFixed(2)}</p>
+                </div>
+            `;
+
+            // Ventas del día
+            const ventasDiv = document.getElementById('ventasDia');
+            if (ventasDelDia.length === 0) {
+                ventasDiv.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i> No hay ventas en este día</div>';
+            } else {
+                ventasDiv.innerHTML = ventasDelDia.map(v => `
+                    <div class="cart-item-terminal" style="margin-bottom: 8px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong>Factura #${v.factura || v.id.slice(-4)}</strong>
+                            <strong style="color: var(--success);">$${v.total.toFixed(2)}</strong>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin: 4px 0;">
+                            ${new Date(v.fecha).toLocaleString()}
+                        </div>
+                        <div style="font-size: 0.75rem;">
+                            ${v.metodo === 'combinado' ? 
+                                Object.entries(v.pagos || {}).filter(([k,val]) => val > 0).map(([k,val]) => `${k}: $${val}`).join(' | ') : 
+                                v.metodo}
+                        </div>
+                        <button class="btn-ver-detalle" data-id="${v.id}" style="margin-top: 8px; font-size: 0.7rem; background: var(--bg-card); border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-eye"></i> Ver detalles
+                        </button>
+                    </div>
+                `).join('');
+
+                document.querySelectorAll('.btn-ver-detalle').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const venta = ventasDelDia.find(v => v.id === btn.dataset.id);
+                        if (venta) {
+                            alert(`Factura #${venta.factura}\nFecha: ${new Date(venta.fecha).toLocaleString()}\n\nItems:\n${venta.items.map(i => `${i.nombre} x${i.cantidad} = $${(i.precio * i.cantidad).toFixed(2)}`).join('\n')}\n\nSubtotal: $${(venta.subtotal || venta.total).toFixed(2)}\nIVA: $${(venta.iva || 0).toFixed(2)}\nTotal: $${venta.total.toFixed(2)}`);
+                        }
+                    });
+                });
+            }
+        }
+
+        document.getElementById('btnCalcularDiferencia').addEventListener('click', async () => {
+            await cargarDatos();
+            const totalContado = calcularTotalContado();
+            const diaCaja = cajaDiaria.find(d => d.fecha === fechaActual) || { total_efectivo: 0 };
+            const diferencia = totalContado - diaCaja.total_efectivo;
+
+            const panel = document.getElementById('panelDiferencia');
+            panel.style.display = 'block';
+
+            const resultado = document.getElementById('resultadoCierre');
+            resultado.innerHTML = `
+                <div style="padding: 16px; text-align: center;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                        <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px;">
+                            <p><strong>Efectivo según sistema:</strong></p>
+                            <p style="font-size: 1.2rem;">$${diaCaja.total_efectivo.toFixed(2)}</p>
+                        </div>
+                        <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px;">
+                            <p><strong>Efectivo contado:</strong></p>
+                            <p style="font-size: 1.2rem;">$${totalContado.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div style="padding: 16px; border-radius: 12px; background: ${diferencia >= 0 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'};">
+                        <p style="font-size: 1.2rem; font-weight: bold;">
+                            Diferencia: ${diferencia >= 0 ? '+' : ''}$${diferencia.toFixed(2)}
+                            ${diferencia > 0 ? '(Sobrante)' : diferencia < 0 ? '(Faltante)' : '(Exacto)'}
+                        </p>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('btnCerrarDia').addEventListener('click', async () => {
+            if (confirm('⚠️ ¿Cerrar el día? Se creará un registro de cierre y se podrá iniciar un nuevo día. Esta acción no elimina datos anteriores.')) {
+                await cargarDatos();
+                const cierres = await storage.getData('cierres_caja') || [];
+                const diaCaja = cajaDiaria.find(d => d.fecha === fechaActual) || { 
+                    fecha: fechaActual, total_ventas: 0, total_efectivo: 0, 
+                    total_tarjeta: 0, total_transferencia: 0, total_credito: 0 
+                };
+                const totalContado = calcularTotalContado();
+
+                cierres.push({
+                    fecha: fechaActual,
+                    cierre: new Date().toISOString(),
+                    total_ventas: diaCaja.total_ventas,
+                    num_ventas: (ventas.filter(v => v.fecha.split('T')[0] === fechaActual)).length,
+                    efectivo_sistema: diaCaja.total_efectivo,
+                    efectivo_contado: totalContado,
+                    diferencia: totalContado - diaCaja.total_efectivo,
+                    tarjeta: diaCaja.total_tarjeta,
+                    transferencia: diaCaja.total_transferencia,
+                    credito: diaCaja.total_credito
+                });
+                await storage.saveData('cierres_caja', cierres);
+                alert('✅ Día cerrado correctamente');
+                cargarHistorial();
+                cargarDia(fechaActual);
+            }
+        });
+
+        async function cargarHistorial() {
+            const cierres = await storage.getData('cierres_caja') || [];
+            const historialDiv = document.getElementById('historialCierres');
+            if (cierres.length === 0) {
+                historialDiv.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i> No hay cierres registrados</div>';
+                return;
+            }
+            historialDiv.innerHTML = cierres.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).map(c => `
+                <div class="cart-item-terminal" style="margin-bottom: 8px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong><i class="fas fa-calendar"></i> ${c.fecha}</strong>
+                        <strong style="color: var(--success);">Total: $${c.total_ventas.toFixed(2)}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                        <span><i class="fas fa-receipt"></i> ${c.num_ventas || 0} ventas</span>
+                        <span><i class="fas fa-money-bill-wave"></i> Efectivo sistema: $${c.efectivo_sistema.toFixed(2)}</span>
+                        <span><i class="fas fa-calculator"></i> Contado: $${c.efectivo_contado.toFixed(2)}</span>
+                    </div>
+                    <div style="margin-top: 4px; color: ${c.diferencia >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                        Diferencia: ${c.diferencia >= 0 ? '+' : ''}$${c.diferencia.toFixed(2)}
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;">
+                        Cerrado: ${new Date(c.cierre).toLocaleString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('btnExportarHistorial').addEventListener('click', async () => {
+            const cierres = await storage.getData('cierres_caja') || [];
+            let csv = "Fecha,Cierre,Tipo,Total Ventas,N° Ventas,Efectivo Sistema,Efectivo Contado,Diferencia,Tarjeta,Transferencia,Crédito\n";
+            cierres.forEach(c => {
+                csv += `${c.fecha},${c.cierre},cierre,${c.total_ventas},${c.num_ventas},${c.efectivo_sistema},${c.efectivo_contado},${c.diferencia},${c.tarjeta||0},${c.transferencia||0},${c.credito||0}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cierres_caja_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('✅ Historial exportado a Excel/CSV');
+        });
+
+        document.getElementById('btnExportarPDF').addEventListener('click', () => {
+            window.print();
+        });
+
+        document.getElementById('btnCargarDia').addEventListener('click', () => {
+            const fecha = document.getElementById('fechaCierre').value;
+            if (fecha) cargarDia(fecha);
+        });
+
+        document.getElementById('btnHoy').addEventListener('click', () => {
+            cargarDia(new Date().toISOString().split('T')[0]);
+        });
+
+        // Inicialización
+        cargarDia(new Date().toISOString().split('T')[0]);
+        cargarHistorial();
+
+        // Sidebar móvil
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        mobileMenuBtn?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay?.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+
+        // Tema oscuro
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeToggle.querySelector('#themeStatus').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.querySelector('#themeStatus').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
+
+        // Colores
+        const colorDots = document.querySelectorAll('.color-dot');
+        const savedColor = localStorage.getItem('colorTheme') || 'default';
+        document.documentElement.setAttribute('data-color', savedColor);
+        colorDots.forEach(dot => {
+            dot.classList.toggle('active', dot.dataset.color === savedColor);
+            dot.addEventListener('click', () => {
+                const color = dot.dataset.color;
+                document.documentElement.setAttribute('data-color', color);
+                localStorage.setItem('colorTheme', color);
+                colorDots.forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+            });
+        });
+    </script>
+    <style>
+        @media print {
+            .sidebar, .mobile-header, .theme-toggle, .color-options, button, .btn-terminal, .modal, .modal-content {
+                display: none !important;
+            }
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .terminal-card {
+                break-inside: avoid;
+            }
+        }
+        .stat-box {
+            transition: transform 0.2s;
+        }
+        .stat-box:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</body>
+</html>
