@@ -55,6 +55,26 @@
             opacity: 0.9;
         }
         
+        .success-list {
+            text-align: left;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        
+        .success-list li {
+            margin: 8px 0;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .success-list li:before {
+            content: "✅";
+        }
+        
         .btn-retry {
             margin-top: 24px;
             padding: 12px 24px;
@@ -88,6 +108,7 @@
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
             margin-right: 8px;
+            vertical-align: middle;
         }
         
         @keyframes spin {
@@ -100,24 +121,31 @@
         <div class="offline-icon">
             📡
         </div>
-        <h1>Sin conexión a internet</h1>
-        <p>No hay conexión a internet en este momento.</p>
-        <p>Los datos que ya has guardado siguen disponibles cuando abras la app.</p>
-        <p>✅ Puedes seguir usando la app normalmente</p>
-        <p>✅ Las ventas se guardan localmente</p>
-        <p>✅ Los datos se sincronizarán cuando vuelvas a tener internet</p>
+        <h1>POS Terminal</h1>
+        <p>Estás <strong>sin conexión a internet</strong> en este momento.</p>
+        
+        <div class="success-list">
+            <ul>
+                <li>📦 Gestionar inventario y productos</li>
+                <li>🛒 Registrar ventas y carrito</li>
+                <li>👥 Administrar clientes y créditos</li>
+                <li>📊 Ver reportes y estadísticas</li>
+                <li>💾 Todos los datos se guardan localmente</li>
+            </ul>
+        </div>
+        
+        <p><strong>¡Tu app sigue funcionando!</strong><br>Los datos se sincronizarán cuando vuelvas a tener internet.</p>
         
         <button class="btn-retry" onclick="location.reload()">
-            <span class="loader"></span> Reintentar
+            <span class="loader"></span> Reintentar conexión
         </button>
         
         <div class="info">
-            <i class="fas fa-info-circle"></i> Si instalaste la app, puedes abrirla normalmente desde la pantalla de inicio
+            <i class="fas fa-info-circle"></i> Si instalaste la app, puedes abrirla desde la pantalla de inicio
         </div>
     </div>
     
     <script>
-        // Intentar reconectar automáticamente cada 30 segundos
         let retryCount = 0;
         const maxRetries = 5;
         
@@ -132,7 +160,6 @@
         
         setTimeout(checkConnection, 30000);
         
-        // Escuchar cuando vuelva la conexión
         window.addEventListener('online', () => {
             location.reload();
         });
