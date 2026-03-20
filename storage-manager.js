@@ -1,10 +1,10 @@
-// storage-manager.js - Sistema de almacenamiento multi-opción
+// storage-manager.js - Sistema de almacenamiento multi-opción con soporte para IndexedDB
 
 class StorageManager {
     constructor() {
         this.storageType = localStorage.getItem('storage_type') || 'localStorage';
         this.dbName = 'POS_Terminal_DB';
-        this.dbVersion = 2;
+        this.dbVersion = 3; // Incrementado para soportar nuevas colecciones
         this.db = null;
         this.initIndexedDB();
     }
@@ -13,7 +13,7 @@ class StorageManager {
     async initIndexedDB() {
         return new Promise((resolve, reject) => {
             if (!window.indexedDB) {
-                console.warn('IndexedDB no soportado');
+                console.warn('IndexedDB no soportado, usando localStorage');
                 reject('IndexedDB no soportado');
                 return;
             }
@@ -30,7 +30,12 @@ class StorageManager {
                 const db = event.target.result;
                 
                 // Crear stores si no existen
-                const stores = ['productos', 'ventas', 'clientes', 'pagos', 'caja_diaria', 'cierres_caja', 'gastos', 'config'];
+                const stores = [
+                    'productos', 'ventas', 'clientes', 'pagos', 
+                    'caja_diaria', 'cierres_caja', 'gastos', 
+                    'entradas_stock', 'config'
+                ];
+                
                 stores.forEach(store => {
                     if (!db.objectStoreNames.contains(store)) {
                         if (store === 'caja_diaria' || store === 'cierres_caja') {
@@ -67,7 +72,10 @@ class StorageManager {
 
     // ==================== OBTENER TODOS LOS DATOS ====================
     async getAllData() {
-        const collections = ['productos', 'ventas', 'clientes', 'pagos', 'caja_diaria', 'cierres_caja', 'gastos'];
+        const collections = [
+            'productos', 'ventas', 'clientes', 'pagos', 
+            'caja_diaria', 'cierres_caja', 'gastos', 'entradas_stock'
+        ];
         const data = {};
         
         for (const collection of collections) {
@@ -100,6 +108,17 @@ class StorageManager {
         } else {
             return this.deleteDataLocalStorage(collection, id);
         }
+    }
+
+    async updateData(collection, id, newData) {
+        const data = await this.getData(collection);
+        const index = data.findIndex(item => item.id === id);
+        if (index !== -1) {
+            data[index] = { ...data[index], ...newData };
+            await this.saveData(collection, data);
+            return true;
+        }
+        return false;
     }
 
     // ==================== MÉTODOS LOCALSTORAGE ====================
@@ -240,7 +259,11 @@ class StorageManager {
                         return;
                     }
                     
-                    const validCollections = ['productos', 'ventas', 'clientes', 'pagos', 'caja_diaria', 'cierres_caja', 'gastos'];
+                    const validCollections = [
+                        'productos', 'ventas', 'clientes', 'pagos', 
+                        'caja_diaria', 'cierres_caja', 'gastos', 'entradas_stock'
+                    ];
+                    
                     for (const collection of validCollections) {
                         if (importData.data[collection]) {
                             await this.saveData(collection, importData.data[collection]);
@@ -260,11 +283,17 @@ class StorageManager {
 
     // ==================== LIMPIAR TODOS LOS DATOS ====================
     async clearAllData() {
-        const collections = ['productos', 'ventas', 'clientes', 'pagos', 'caja_diaria', 'cierres_caja', 'gastos'];
+        const collections = [
+            'productos', 'ventas', 'clientes', 'pagos', 
+            'caja_diaria', 'cierres_caja', 'gastos', 'entradas_stock'
+        ];
         
         for (const collection of collections) {
             await this.saveData(collection, []);
         }
+        
+        // Resetear contadores
+        localStorage.setItem('ultimo_numero_factura', '0');
         
         return true;
     }
@@ -284,6 +313,7 @@ class StorageManager {
             type: this.storageType,
             totalItems,
             totalSize: (totalSize / 1024).toFixed(2) + ' KB',
+            totalSizeBytes: totalSize,
             collections: {
                 productos: data.productos.length,
                 ventas: data.ventas.length,
@@ -291,8 +321,65 @@ class StorageManager {
                 pagos: data.pagos.length,
                 caja_diaria: data.caja_diaria.length,
                 cierres_caja: data.cierres_caja.length,
-                gastos: data.gastos.length
+                gastos: data.gastos.length,
+                entradas_stock: data.entradas_stock.length
             }
+        };
+    }
+
+    // ==================== FUNCIONES ESPECÍFICAS PARA IPV ====================
+    
+    /**
+     * Obtiene el detalle de ventas del día con información de stock
+     * @param {string} fecha - Fecha en formato YYYY-MM-DD
+     * @returns {Promise<Array>} Lista de productos vendidos con detalle de stock
+     */
+    async getIPVDetalle(fecha) {
+        const ventas = await this.getData('ventas');
+        const productos = await this.getData('productos');
+        const entradas = await this.getData('entradas_stock') || [];
+        
+        const ventasDia = ventas.filter(v => v.fecha.split('T')[0] === fecha);
+        const productosVendidos = {};
+        
+        // Agrupar productos vendidos
+        ventasDia.forEach(venta => {
+            venta.items.forEach(item => {
+                if (!productosVendidos[item.id]) {
+                    const productoOriginal = productos.find(p => p.id === item.id);
+                    productosVendidos[item.id] = {
+                        id: item.id,
+                        codigo: productoOriginal?.codigo || item.codigo,
+                        nombre: item.nombre,
+                        precio: item.precio,
+                        costo: item.costo || productoOriginal?.costo || 0,
+                        cantidad: 0,
+                        stockInicial: productoOriginal ? (productoOriginal.stock + item.cantidad) : item.cantidad,
+                        stockFinal: productoOriginal?.stock || 0
+                    };
+                }
+                productosVendidos[item.id].cantidad += item.cantidad;
+            });
+        });
+        
+        // Calcular stock final real
+        Object.values(productosVendidos).forEach(p => {
+            const producto = productos.find(p2 => p2.id === p.id);
+            if (producto) {
+                p.stockFinal = producto.stock;
+            }
+        });
+        
+        // Obtener entradas del día
+        const entradasDia = entradas.filter(e => e.fecha.split('T')[0] === fecha);
+        
+        return {
+            fecha,
+            ventas: ventasDia,
+            productos: Object.values(productosVendidos),
+            entradas: entradasDia,
+            totalVentas: ventasDia.reduce((s, v) => s + v.total, 0),
+            totalGanancia: ventasDia.reduce((s, v) => s + (v.ganancia || 0), 0)
         };
     }
 }
