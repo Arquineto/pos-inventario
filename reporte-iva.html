@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Reporte IVA - POS Terminal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>POS_TERMINAL<span class="terminal-cursor"></span></h1>
+                <small>Reporte IVA</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a href="ventas.html" class="nav-item"><i class="fas fa-cash-register"></i><span>Punto de Venta</span></a>
+                <a href="inventario.html" class="nav-item"><i class="fas fa-boxes"></i><span>Inventario</span></a>
+                <a href="clientes.html" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
+                <a href="reportes.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Reportes</span></a>
+                <a href="ventas-dia.html" class="nav-item"><i class="fas fa-chart-simple"></i><span>IPV del Día</span></a>
+                <a href="cierre-caja.html" class="nav-item"><i class="fas fa-calculator"></i><span>Cierre de Caja</span></a>
+                <a href="reporte-iva.html" class="nav-item active"><i class="fas fa-file-invoice-dollar"></i><span>Reporte IVA</span></a>
+                <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="theme-toggle" id="themeToggle">
+                    <span><i class="fas fa-moon"></i> Modo oscuro</span>
+                    <span id="themeStatus">🌙</span>
+                </div>
+                <div class="color-options">
+                    <div class="color-dot" data-color="default" style="background: #2563eb;"></div>
+                    <div class="color-dot" data-color="emerald" style="background: #10b981;"></div>
+                    <div class="color-dot" data-color="violet" style="background: #8b5cf6;"></div>
+                    <div class="color-dot" data-color="rose" style="background: #f43f5e;"></div>
+                    <div class="color-dot" data-color="amber" style="background: #f59e0b;"></div>
+                </div>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <main class="main-content">
+            <div class="mobile-header">
+                <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+                <h2><i class="fas fa-file-invoice-dollar"></i> Reporte IVA</h2>
+                <div></div>
+            </div>
+
+            <!-- Configuración de tasa IVA -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-percent"></i> Configuración de IVA</h2>
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <label><i class="fas fa-chart-line"></i> Tasa de IVA:</label>
+                    <input type="number" id="tasaIVA" class="terminal-input" style="width: 100px;" step="0.1" value="16">
+                    <span>%</span>
+                    <button id="btnGuardarIVA" class="btn-terminal"><i class="fas fa-save"></i> Guardar</button>
+                </div>
+                <div class="info-text" style="margin-top: 8px;">
+                    <i class="fas fa-info-circle"></i> El IVA se calcula automáticamente sobre el subtotal de cada venta
+                </div>
+            </div>
+
+            <!-- Selector de período -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-calendar-alt"></i> Seleccionar período</h2>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="periodo-btn active" data-periodo="dia"><i class="fas fa-sun"></i> Hoy</button>
+                    <button class="periodo-btn" data-periodo="semana"><i class="fas fa-calendar-week"></i> Esta semana</button>
+                    <button class="periodo-btn" data-periodo="mes"><i class="fas fa-calendar-alt"></i> Este mes</button>
+                    <button class="periodo-btn" data-periodo="trimestre"><i class="fas fa-chart-line"></i> Este trimestre</button>
+                    <button class="periodo-btn" data-periodo="anio"><i class="fas fa-calendar"></i> Este año</button>
+                    <div style="display: flex; gap: 8px; margin-left: auto;">
+                        <input type="date" id="fechaInicio" class="terminal-input" placeholder="Inicio">
+                        <input type="date" id="fechaFin" class="terminal-input" placeholder="Fin">
+                        <button id="btnPersonalizado" class="btn-terminal"><i class="fas fa-check"></i> Aplicar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen IVA -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-chart-pie"></i> Resumen de IVA</h2>
+                <div class="iva-summary" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
+                    <div class="stat-box" style="background: var(--bg-tertiary); padding: 20px; border-radius: 16px;">
+                        <i class="fas fa-dollar-sign" style="font-size: 2rem; color: var(--success);"></i>
+                        <h4>Total Ventas</h4>
+                        <p id="totalVentasIVA" style="font-size: 1.5rem; font-weight: bold;">$0</p>
+                    </div>
+                    <div class="stat-box" style="background: var(--bg-tertiary); padding: 20px; border-radius: 16px;">
+                        <i class="fas fa-chart-line" style="font-size: 2rem; color: var(--primary);"></i>
+                        <h4>Subtotal</h4>
+                        <p id="subtotalIVA" style="font-size: 1.5rem; font-weight: bold;">$0</p>
+                    </div>
+                    <div class="stat-box" style="background: var(--bg-tertiary); padding: 20px; border-radius: 16px;">
+                        <i class="fas fa-percent" style="font-size: 2rem; color: var(--warning);"></i>
+                        <h4>IVA Cobrado</h4>
+                        <p id="ivaCobrado" style="font-size: 1.5rem; font-weight: bold; color: var(--warning);">$0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de ventas con IVA desglosado -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-table"></i> Ventas con IVA desglosado</h2>
+                <div style="overflow-x: auto;">
+                    <table class="data-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Factura</th>
+                                <th>Fecha</th>
+                                <th>Subtotal</th>
+                                <th>IVA</th>
+                                <th>Total</th>
+                                <th>Método</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaVentasIVA"></tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: flex-end;">
+                    <button id="btnExportarExcel" class="btn-terminal"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+                    <button id="btnExportarPDF" class="btn-terminal"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                </div>
+            </div>
+
+            <!-- Gráfico de IVA por método de pago -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-chart-bar"></i> IVA por método de pago</h2>
+                <div id="graficoMetodos" style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- Gráfico de barras simple -->
+                </div>
+            </div>
+
+            <!-- Desglose mensual -->
+            <div class="terminal-card">
+                <h2><i class="fas fa-chart-line"></i> Desglose mensual (últimos 12 meses)</h2>
+                <div id="desgloseMensual" style="overflow-x: auto;">
+                    <!-- Tabla mensual -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="storage-manager.js"></script>
+    <script>
+        let tasaIVA = 16;
+        let ventas = [];
+
+        async function cargarTasaIVA() {
+            const saved = localStorage.getItem('iva_rate');
+            if (saved) tasaIVA = parseFloat(saved);
+            document.getElementById('tasaIVA').value = tasaIVA;
+        }
+
+        document.getElementById('btnGuardarIVA').addEventListener('click', () => {
+            tasaIVA = parseFloat(document.getElementById('tasaIVA').value);
+            localStorage.setItem('iva_rate', tasaIVA);
+            alert(`✅ Tasa de IVA actualizada a ${tasaIVA}%`);
+            cargarReporte();
+        });
+
+        function obtenerFechasPeriodo(periodo) {
+            const hoy = new Date();
+            let inicio = new Date();
+            let fin = new Date();
+            
+            switch(periodo) {
+                case 'dia':
+                    inicio.setHours(0, 0, 0, 0);
+                    fin.setHours(23, 59, 59, 999);
+                    break;
+                case 'semana':
+                    inicio.setDate(hoy.getDate() - hoy.getDay());
+                    inicio.setHours(0, 0, 0, 0);
+                    fin = new Date();
+                    break;
+                case 'mes':
+                    inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+                    fin = new Date();
+                    break;
+                case 'trimestre':
+                    const trimestre = Math.floor(hoy.getMonth() / 3);
+                    inicio = new Date(hoy.getFullYear(), trimestre * 3, 1);
+                    fin = new Date();
+                    break;
+                case 'anio':
+                    inicio = new Date(hoy.getFullYear(), 0, 1);
+                    fin = new Date();
+                    break;
+                default:
+                    break;
+            }
+            return { inicio, fin };
+        }
+
+        async function cargarReporte() {
+            ventas = await storage.getData('ventas');
+            
+            let fechaInicio, fechaFin;
+            const periodoActivo = document.querySelector('.periodo-btn.active')?.dataset.periodo;
+            
+            if (periodoActivo && periodoActivo !== 'personalizado') {
+                const fechas = obtenerFechasPeriodo(periodoActivo);
+                fechaInicio = fechas.inicio;
+                fechaFin = fechas.fin;
+            } else {
+                fechaInicio = new Date(document.getElementById('fechaInicio').value);
+                fechaFin = new Date(document.getElementById('fechaFin').value);
+                fechaFin.setHours(23, 59, 59, 999);
+            }
+            
+            const ventasFiltradas = ventas.filter(v => {
+                const fechaVenta = new Date(v.fecha);
+                return fechaVenta >= fechaInicio && fechaVenta <= fechaFin;
+            });
+            
+            let totalVentas = 0;
+            let totalSubtotal = 0;
+            let totalIVA = 0;
+            const ivaPorMetodo = { efectivo: 0, tarjeta: 0, transferencia: 0, credito: 0, combinado: 0 };
+            
+            ventasFiltradas.forEach(v => {
+                const subtotal = v.subtotal || (v.total / (1 + tasaIVA / 100));
+                const iva = v.iva || (v.total - subtotal);
+                totalVentas += v.total;
+                totalSubtotal += subtotal;
+                totalIVA += iva;
+                
+                const metodo = v.metodo === 'combinado' ? 'combinado' : v.metodo;
+                if (ivaPorMetodo[metodo] !== undefined) ivaPorMetodo[metodo] += iva;
+                else ivaPorMetodo.combinado += iva;
+            });
+            
+            document.getElementById('totalVentasIVA').textContent = `$${totalVentas.toFixed(2)}`;
+            document.getElementById('subtotalIVA').textContent = `$${totalSubtotal.toFixed(2)}`;
+            document.getElementById('ivaCobrado').textContent = `$${totalIVA.toFixed(2)}`;
+            
+            // Tabla
+            const tbody = document.getElementById('tablaVentasIVA');
+            if (ventasFiltradas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No hay ventas en este período</td></tr>';
+            } else {
+                tbody.innerHTML = ventasFiltradas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).map(v => {
+                    const subtotal = v.subtotal || (v.total / (1 + tasaIVA / 100));
+                    const iva = v.iva || (v.total - subtotal);
+                    const metodoMostrar = v.metodo === 'combinado' ? 
+                        Object.entries(v.pagos || {}).filter(([k, val]) => val > 0).map(([k, val]) => k).join('+') : 
+                        v.metodo;
+                    return `
+                        <tr>
+                            <td>#${v.factura || v.id.slice(-4)}</td>
+                            <td>${new Date(v.fecha).toLocaleDateString()}</td>
+                            <td>$${subtotal.toFixed(2)}</td>
+                            <td>$${iva.toFixed(2)}</td>
+                            <td>$${v.total.toFixed(2)}</td>
+                            <td>${metodoMostrar}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            // Gráfico
+            const graficoDiv = document.getElementById('graficoMetodos');
+            const metodos = Object.entries(ivaPorMetodo).filter(([_, val]) => val > 0);
+            const maxIVA = Math.max(...metodos.map(([_, val]) => val), 1);
+            
+            graficoDiv.innerHTML = metodos.map(([metodo, monto]) => {
+                const porcentaje = (monto / maxIVA) * 100;
+                const nombreMetodo = {
+                    efectivo: '💵 Efectivo', 
+                    tarjeta: '💳 Tarjeta', 
+                    transferencia: '📱 Transferencia', 
+                    credito: '📝 Crédito', 
+                    combinado: '🔄 Combinado'
+                }[metodo] || metodo;
+                return `
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span><strong>${nombreMetodo}</strong></span>
+                            <span>$${monto.toFixed(2)}</span>
+                        </div>
+                        <div class="progress-bar" style="height: 24px; border-radius: 12px;">
+                            <div class="progress-fill" style="width: ${porcentaje}%; background: var(--primary); border-radius: 12px;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Desglose mensual
+            const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const ahora = new Date();
+            const mensual = [];
+            for (let i = 11; i >= 0; i--) {
+                const fecha = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
+                const mesVentas = ventas.filter(v => {
+                    const f = new Date(v.fecha);
+                    return f.getMonth() === fecha.getMonth() && f.getFullYear() === fecha.getFullYear();
+                });
+                const totalMes = mesVentas.reduce((s, v) => s + v.total, 0);
+                const ivaMes = mesVentas.reduce((s, v) => {
+                    const iva = v.iva || (v.total - (v.subtotal || (v.total / (1 + tasaIVA / 100))));
+                    return s + iva;
+                }, 0);
+                mensual.push({ mes: `${meses[fecha.getMonth()]} ${fecha.getFullYear()}`, total: totalMes, iva: ivaMes });
+            }
+            
+            const desgloseDiv = document.getElementById('desgloseMensual');
+            desgloseDiv.innerHTML = `
+                <table class="data-table" style="width: 100%;">
+                    <thead>
+                        <tr><th>Mes</th><th>Total Ventas</th><th>IVA Generado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${mensual.map(m => `
+                            <tr>
+                                <td>${m.mes}</td>
+                                <td>$${m.total.toFixed(2)}</td>
+                                <td>$${m.iva.toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Exportar Excel
+        document.getElementById('btnExportarExcel').addEventListener('click', async () => {
+            ventas = await storage.getData('ventas');
+            let fechaInicio, fechaFin;
+            const periodoActivo = document.querySelector('.periodo-btn.active')?.dataset.periodo;
+            
+            if (periodoActivo && periodoActivo !== 'personalizado') {
+                const fechas = obtenerFechasPeriodo(periodoActivo);
+                fechaInicio = fechas.inicio;
+                fechaFin = fechas.fin;
+            } else {
+                fechaInicio = new Date(document.getElementById('fechaInicio').value);
+                fechaFin = new Date(document.getElementById('fechaFin').value);
+                fechaFin.setHours(23, 59, 59, 999);
+            }
+            
+            const ventasFiltradas = ventas.filter(v => new Date(v.fecha) >= fechaInicio && new Date(v.fecha) <= fechaFin);
+            
+            let csv = "Factura,Fecha,Subtotal,IVA,Total,Método\n";
+            ventasFiltradas.forEach(v => {
+                const subtotal = v.subtotal || (v.total / (1 + tasaIVA / 100));
+                const iva = v.iva || (v.total - subtotal);
+                const metodoMostrar = v.metodo === 'combinado' ? 
+                    Object.entries(v.pagos || {}).filter(([k, val]) => val > 0).map(([k, val]) => k).join('+') : 
+                    v.metodo;
+                csv += `#${v.factura || v.id.slice(-4)},${new Date(v.fecha).toLocaleDateString()},${subtotal.toFixed(2)},${iva.toFixed(2)},${v.total.toFixed(2)},${metodoMostrar}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reporte_iva_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('✅ Reporte exportado a Excel/CSV');
+        });
+        
+        // Exportar PDF simple (ventana de impresión)
+        document.getElementById('btnExportarPDF').addEventListener('click', () => {
+            window.print();
+        });
+        
+        // Eventos de período
+        document.querySelectorAll('.periodo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.periodo-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                cargarReporte();
+            });
+        });
+        
+        document.getElementById('btnPersonalizado').addEventListener('click', () => {
+            document.querySelectorAll('.periodo-btn').forEach(b => b.classList.remove('active'));
+            cargarReporte();
+        });
+        
+        // Inicialización
+        cargarTasaIVA();
+        cargarReporte();
+        
+        // Sidebar móvil
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        mobileMenuBtn?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay?.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+        
+        // Tema oscuro
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeToggle.querySelector('#themeStatus').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.querySelector('#themeStatus').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
+        
+        // Colores
+        const colorDots = document.querySelectorAll('.color-dot');
+        const savedColor = localStorage.getItem('colorTheme') || 'default';
+        document.documentElement.setAttribute('data-color', savedColor);
+        colorDots.forEach(dot => {
+            dot.classList.toggle('active', dot.dataset.color === savedColor);
+            dot.addEventListener('click', () => {
+                const color = dot.dataset.color;
+                document.documentElement.setAttribute('data-color', color);
+                localStorage.setItem('colorTheme', color);
+                colorDots.forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+            });
+        });
+    </script>
+    
+    <style>
+        @media print {
+            .sidebar, .mobile-header, .theme-toggle, .color-options, .periodo-btn, #btnExportarExcel, #btnExportarPDF, button, .btn-terminal {
+                display: none !important;
+            }
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .terminal-card {
+                break-inside: avoid;
+            }
+        }
+        .progress-bar {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+        .data-table th, .data-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .data-table th {
+            background: var(--bg-tertiary);
+            font-weight: bold;
+        }
+        .stat-box {
+            transition: transform 0.2s;
+        }
+        .stat-box:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</body>
+</html>
