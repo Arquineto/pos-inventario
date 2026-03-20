@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventario</title>
+    <title>Inventario - POS Terminal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,252 +11,181 @@
 <body>
     <div class="app-layout">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h1>POS_TERMINAL<span class="terminal-cursor"></span></h1>
-                <small>Inventario</small>
-            </div>
+            <div class="sidebar-header"><h1>POS_TERMINAL<span class="terminal-cursor"></span></h1><small>Inventario</small></div>
             <nav class="sidebar-nav">
-                <a href="index.html" class="nav-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="ventas.html" class="nav-item">
-                    <i class="fas fa-cash-register"></i>
-                    <span>Punto de Venta</span>
-                </a>
-                <a href="inventario.html" class="nav-item active">
-                    <i class="fas fa-boxes"></i>
-                    <span>Inventario</span>
-                </a>
-                <a href="clientes.html" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    <span>Clientes</span>
-                </a>
-                <a href="reportes.html" class="nav-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Reportes</span>
-                </a>
+                <a href="index.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a href="ventas.html" class="nav-item"><i class="fas fa-cash-register"></i><span>Punto de Venta</span></a>
+                <a href="inventario.html" class="nav-item active"><i class="fas fa-boxes"></i><span>Inventario</span></a>
+                <a href="clientes.html" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
+                <a href="reportes.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Reportes</span></a>
+                <a href="ventas-dia.html" class="nav-item"><i class="fas fa-chart-simple"></i><span>IPV del Día</span></a>
+                <a href="cierre-caja.html" class="nav-item"><i class="fas fa-calculator"></i><span>Cierre de Caja</span></a>
+                <a href="reporte-iva.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i><span>Reporte IVA</span></a>
+                <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
             </nav>
             <div class="sidebar-footer">
-                <div class="theme-controls">
-                    <div class="theme-toggle" id="themeToggle">
-                        <span><i class="fas fa-moon"></i> Modo oscuro</span>
-                        <span id="themeStatus">🌙</span>
-                    </div>
-                </div>
+                <div class="theme-toggle" id="themeToggle"><span><i class="fas fa-moon"></i> Modo oscuro</span><span id="themeStatus">🌙</span></div>
+                <div class="color-options"><div class="color-dot" data-color="default" style="background:#2563eb"></div><div class="color-dot" data-color="emerald" style="background:#10b981"></div><div class="color-dot" data-color="violet" style="background:#8b5cf6"></div><div class="color-dot" data-color="rose" style="background:#f43f5e"></div><div class="color-dot" data-color="amber" style="background:#f59e0b"></div></div>
             </div>
         </aside>
-
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <main class="main-content">
-            <div class="mobile-header">
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h2>📦 Inventario</h2>
-                <div></div>
-            </div>
+            <div class="mobile-header"><button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button><h2><i class="fas fa-boxes"></i> Inventario</h2><div></div></div>
 
             <div class="terminal-card">
-                <h2><i class="fas fa-plus-circle"></i> Agregar producto</h2>
-                <button id="btnAgregar" class="btn-terminal btn-terminal-primary" style="margin-bottom: 16px;">+ Nuevo producto</button>
-
-                <div id="formProducto" class="hidden" style="margin-top: 16px;">
-                    <input type="text" id="prodCodigo" class="terminal-input" placeholder="Código de barras" style="margin-bottom: 12px;">
-                    <input type="text" id="prodNombre" class="terminal-input" placeholder="Nombre del producto" style="margin-bottom: 12px;">
-                    <input type="number" id="prodPrecio" class="terminal-input" placeholder="Precio" style="margin-bottom: 12px;">
-                    <input type="number" id="prodStock" class="terminal-input" placeholder="Stock actual" style="margin-bottom: 12px;">
-                    <input type="number" id="prodStockMinimo" class="terminal-input" placeholder="Stock mínimo (alerta)" value="5" style="margin-bottom: 12px;">
-                    <div style="display: flex; gap: 12px;">
-                        <button id="btnGuardar" class="btn-terminal btn-terminal-primary">Guardar</button>
-                        <button id="btnCancelar" class="btn-terminal">Cancelar</button>
-                    </div>
+                <h2><i class="fas fa-plus-circle"></i> Agregar/Editar Producto</h2>
+                <button id="btnAgregar" class="btn-terminal btn-terminal-primary" style="margin-bottom:16px;">+ Nuevo Producto</button>
+                <div id="formProducto" class="hidden">
+                    <input type="text" id="prodCodigo" class="terminal-input" placeholder="Código (opcional)" style="margin-bottom:12px;">
+                    <input type="text" id="prodNombre" class="terminal-input" placeholder="Nombre *" style="margin-bottom:12px;">
+                    <input type="number" id="prodCosto" class="terminal-input" placeholder="Costo" style="margin-bottom:12px;">
+                    <input type="number" id="prodPrecio" class="terminal-input" placeholder="Precio *" style="margin-bottom:12px;">
+                    <input type="number" id="prodStock" class="terminal-input" placeholder="Cantidad *" style="margin-bottom:12px;">
+                    <input type="number" id="prodStockMinimo" class="terminal-input" placeholder="Stock mínimo" value="5" style="margin-bottom:12px;">
+                    <input type="text" id="prodCategoria" class="terminal-input" placeholder="Categoría" style="margin-bottom:12px;">
+                    <div style="display:flex; gap:12px;"><button id="btnGuardar" class="btn-terminal btn-terminal-primary">Guardar</button><button id="btnCancelar" class="btn-terminal">Cancelar</button></div>
                 </div>
             </div>
 
             <div class="terminal-card">
                 <h2><i class="fas fa-search"></i> Productos</h2>
-                <input type="text" id="buscarProducto" class="terminal-input" placeholder="🔍 Buscar por nombre o código...">
-                
-                <div id="alertStockBajo" class="alert-banner hidden" style="background: var(--danger); color: white; padding: 12px; border-radius: 8px; margin: 16px 0;">
-                    ⚠️ Hay productos con stock bajo. Revisa la lista.
+                <div style="display:flex; gap:12px; margin-bottom:16px;">
+                    <input type="text" id="buscarProducto" class="terminal-input" style="flex:1;" placeholder="🔍 Buscar...">
+                    <select id="ordenarPor" class="terminal-input" style="width:150px;"><option value="nombre">Nombre A-Z</option><option value="categoria">Categoría</option><option value="precio">Precio</option><option value="stock">Stock</option></select>
                 </div>
-                
-                <div id="listaInventario" class="products-grid" style="margin-top: 20px;">
-                    <!-- Productos cargados -->
-                </div>
+                <div id="alertStockBajo" class="alert-banner hidden" style="background:var(--danger); color:white; padding:12px; border-radius:8px; margin-bottom:16px;">⚠️ Productos con stock bajo</div>
+                <div id="listaInventario" class="products-grid"></div>
             </div>
         </main>
     </div>
 
     <script src="app.js"></script>
+    <script src="storage-manager.js"></script>
     <script>
         let editandoId = null;
-        
-        function mostrarAlertasStock(productos) {
-            const stockBajo = productos.filter(p => p.stock <= (p.stockMinimo || 5));
-            const alertBanner = document.getElementById('alertStockBajo');
-            if (stockBajo.length > 0) {
-                alertBanner.classList.remove('hidden');
-            } else {
-                alertBanner.classList.add('hidden');
-            }
-        }
-        
-        function cargarInventario() {
-            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+        let productos = [];
+
+        async function cargarInventario() {
+            productos = await storage.getData('productos');
             const busqueda = document.getElementById('buscarProducto').value.toLowerCase();
-            
-            const filtrados = productos.filter(p => 
-                p.nombre.toLowerCase().includes(busqueda) || 
-                p.codigo.toLowerCase().includes(busqueda)
-            );
-            
-            mostrarAlertasStock(productos);
-            
+            const orden = document.getElementById('ordenarPor').value;
+            let filtrados = productos.filter(p => p.nombre.toLowerCase().includes(busqueda) || (p.codigo && p.codigo.toLowerCase().includes(busqueda)));
+            if(orden === 'nombre') filtrados.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+            else if(orden === 'categoria') filtrados.sort((a,b)=>(a.categoria||'').localeCompare(b.categoria||''));
+            else if(orden === 'precio') filtrados.sort((a,b)=>a.precio - b.precio);
+            else if(orden === 'stock') filtrados.sort((a,b)=>a.stock - b.stock);
+            const stockBajo = productos.filter(p => p.stock <= (p.stockMinimo || 5));
+            document.getElementById('alertStockBajo').classList.toggle('hidden', stockBajo.length === 0);
             const lista = document.getElementById('listaInventario');
-            if (filtrados.length === 0) {
-                lista.innerHTML = '<div class="empty-state">📭 No hay productos agregados</div>';
-                return;
-            }
-            
+            if(!filtrados.length){ lista.innerHTML='<div class="empty-state">📭 No hay productos</div>'; return; }
             lista.innerHTML = filtrados.map(p => {
                 const stockMin = p.stockMinimo || 5;
-                const stockBajo = p.stock <= stockMin;
-                return `
-                    <div class="product-card-grid ${stockBajo ? 'stock-low' : ''}">
-                        ${stockBajo ? '<div class="stock-badge">⚠️ Stock bajo</div>' : ''}
-                        <div class="product-icon">
-                            <i class="fas fa-cube"></i>
-                        </div>
-                        <div class="product-name">${p.nombre}</div>
-                        <div class="product-price">$${p.precio.toFixed(2)}</div>
-                        <div class="product-stock">Stock: ${p.stock} / ${stockMin}</div>
-                        <div style="display: flex; gap: 8px; margin-top: 12px;">
-                            <button class="btn-edit" data-id="${p.id}" style="flex: 1; background: var(--bg-tertiary); border: none; padding: 6px; border-radius: 6px; cursor: pointer;">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button class="btn-delete" data-id="${p.id}" style="flex: 1; background: var(--danger); color: white; border: none; padding: 6px; border-radius: 6px; cursor: pointer;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+                const margen = p.costo ? (((p.precio - p.costo) / p.precio) * 100).toFixed(1) : 'N/A';
+                return `<div class="product-card-grid ${p.stock <= stockMin ? 'stock-low' : ''}">
+                    ${p.stock <= stockMin ? '<div class="stock-badge">⚠️ Stock bajo</div>' : ''}
+                    <div class="product-icon"><i class="fas fa-cube"></i></div>
+                    <div class="product-name">${p.nombre}</div>
+                    <div class="product-price">$${p.precio.toFixed(2)}</div>
+                    <div class="product-stock">Stock: ${p.stock} / ${stockMin}</div>
+                    <div class="product-category">${p.categoria || 'Sin categoría'}</div>
+                    <div class="product-margin">Margen: ${margen}%</div>
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        <button class="btn-edit" data-id="${p.id}" style="flex:1; background:var(--bg-tertiary); border:none; padding:6px; border-radius:6px;"><i class="fas fa-edit"></i> Editar</button>
+                        <button class="btn-delete" data-id="${p.id}" style="flex:1; background:var(--danger); color:white; border:none; padding:6px; border-radius:6px;"><i class="fas fa-trash"></i></button>
                     </div>
-                `;
+                </div>`;
             }).join('');
-            
-            document.querySelectorAll('.btn-edit').forEach(btn => {
-                btn.addEventListener('click', () => editarProducto(btn.dataset.id));
-            });
-            document.querySelectorAll('.btn-delete').forEach(btn => {
-                btn.addEventListener('click', () => eliminarProducto(btn.dataset.id));
-            });
+            document.querySelectorAll('.btn-edit').forEach(btn=>btn.addEventListener('click',()=>editarProducto(btn.dataset.id)));
+            document.querySelectorAll('.btn-delete').forEach(btn=>btn.addEventListener('click',()=>eliminarProducto(btn.dataset.id)));
         }
-        
+
         function editarProducto(id) {
-            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
-            const producto = productos.find(p => p.id === id);
-            if (producto) {
-                editandoId = id;
-                document.getElementById('prodCodigo').value = producto.codigo;
-                document.getElementById('prodNombre').value = producto.nombre;
-                document.getElementById('prodPrecio').value = producto.precio;
-                document.getElementById('prodStock').value = producto.stock;
-                document.getElementById('prodStockMinimo').value = producto.stockMinimo || 5;
+            const p = productos.find(p=>p.id===id);
+            if(p){
+                editandoId=id;
+                document.getElementById('prodCodigo').value=p.codigo||'';
+                document.getElementById('prodNombre').value=p.nombre;
+                document.getElementById('prodCosto').value=p.costo||'';
+                document.getElementById('prodPrecio').value=p.precio;
+                document.getElementById('prodStock').value=p.stock;
+                document.getElementById('prodStockMinimo').value=p.stockMinimo||5;
+                document.getElementById('prodCategoria').value=p.categoria||'';
                 document.getElementById('formProducto').classList.remove('hidden');
-                document.getElementById('btnAgregar').style.display = 'none';
+                document.getElementById('btnAgregar').style.display='none';
             }
         }
-        
-        function eliminarProducto(id) {
-            if (confirm('¿Eliminar este producto?')) {
-                let productos = JSON.parse(localStorage.getItem('productos') || '[]');
-                productos = productos.filter(p => p.id !== id);
-                localStorage.setItem('productos', JSON.stringify(productos));
+
+        async function eliminarProducto(id) {
+            if(confirm('¿Eliminar producto?')){
+                productos = productos.filter(p=>p.id!==id);
+                await storage.saveData('productos',productos);
                 cargarInventario();
             }
         }
-        
-        document.getElementById('btnAgregar').addEventListener('click', () => {
-            editandoId = null;
-            document.getElementById('prodCodigo').value = '';
-            document.getElementById('prodNombre').value = '';
-            document.getElementById('prodPrecio').value = '';
-            document.getElementById('prodStock').value = '';
-            document.getElementById('prodStockMinimo').value = '5';
+
+        function verificarDuplicados(nombre, codigo, costo) {
+            const existente = productos.find(p => (p.nombre.toLowerCase() === nombre.toLowerCase()) || (codigo && p.codigo === codigo));
+            if(existente && (!editandoId || existente.id !== editandoId)) return true;
+            return false;
+        }
+
+        document.getElementById('btnAgregar').addEventListener('click',()=>{
+            editandoId=null;
+            document.getElementById('prodCodigo').value='';
+            document.getElementById('prodNombre').value='';
+            document.getElementById('prodCosto').value='';
+            document.getElementById('prodPrecio').value='';
+            document.getElementById('prodStock').value='';
+            document.getElementById('prodStockMinimo').value='5';
+            document.getElementById('prodCategoria').value='';
             document.getElementById('formProducto').classList.remove('hidden');
-            document.getElementById('btnAgregar').style.display = 'none';
+            document.getElementById('btnAgregar').style.display='none';
         });
-        
-        document.getElementById('btnGuardar').addEventListener('click', () => {
+
+        document.getElementById('btnGuardar').addEventListener('click',async()=>{
             const codigo = document.getElementById('prodCodigo').value.trim();
             const nombre = document.getElementById('prodNombre').value.trim();
+            const costo = parseFloat(document.getElementById('prodCosto').value) || 0;
             const precio = parseFloat(document.getElementById('prodPrecio').value);
             const stock = parseInt(document.getElementById('prodStock').value);
             const stockMinimo = parseInt(document.getElementById('prodStockMinimo').value) || 5;
-            
-            if (!codigo || !nombre || isNaN(precio) || isNaN(stock)) {
-                alert('Completa todos los campos');
-                return;
-            }
-            
-            let productos = JSON.parse(localStorage.getItem('productos') || '[]');
-            
-            if (editandoId) {
-                const index = productos.findIndex(p => p.id === editandoId);
-                if (index !== -1) {
-                    productos[index] = { ...productos[index], codigo, nombre, precio, stock, stockMinimo };
-                }
+            const categoria = document.getElementById('prodCategoria').value.trim();
+            if(!nombre || isNaN(precio) || isNaN(stock)){ alert('Completa los campos obligatorios'); return; }
+            if(verificarDuplicados(nombre, codigo, costo)){ alert('Ya existe un producto con ese nombre o código'); return; }
+            if(editandoId){
+                const idx = productos.findIndex(p=>p.id===editandoId);
+                if(idx!==-1) productos[idx] = {...productos[idx], codigo, nombre, costo, precio, stock, stockMinimo, categoria};
             } else {
-                const nuevoId = Date.now().toString();
-                productos.push({ id: nuevoId, codigo, nombre, precio, stock, stockMinimo });
+                productos.push({ id:Date.now().toString(), codigo, nombre, costo, precio, stock, stockMinimo, categoria });
             }
-            
-            localStorage.setItem('productos', JSON.stringify(productos));
+            await storage.saveData('productos',productos);
             document.getElementById('formProducto').classList.add('hidden');
-            document.getElementById('btnAgregar').style.display = 'block';
+            document.getElementById('btnAgregar').style.display='block';
             cargarInventario();
         });
-        
-        document.getElementById('btnCancelar').addEventListener('click', () => {
+
+        document.getElementById('btnCancelar').addEventListener('click',()=>{
             document.getElementById('formProducto').classList.add('hidden');
-            document.getElementById('btnAgregar').style.display = 'block';
+            document.getElementById('btnAgregar').style.display='block';
         });
-        
-        document.getElementById('buscarProducto').addEventListener('input', cargarInventario);
-        
+
+        document.getElementById('buscarProducto').addEventListener('input',cargarInventario);
+        document.getElementById('ordenarPor').addEventListener('change',cargarInventario);
+
         cargarInventario();
-        
-        // Sidebar móvil
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        
-        function toggleSidebar() {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('open');
-        }
-        
-        mobileMenuBtn?.addEventListener('click', toggleSidebar);
-        overlay?.addEventListener('click', toggleSidebar);
-        
-        // Tema
-        const themeToggle = document.getElementById('themeToggle');
-        const themeStatus = document.getElementById('themeStatus');
-        
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            themeStatus.textContent = theme === 'dark' ? '☀️' : '🌙';
-        }
-        
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(savedTheme);
-        
-        themeToggle?.addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-theme');
-            setTheme(current === 'dark' ? 'light' : 'dark');
-        });
+
+        // Sidebar, tema, colores (igual que en otros archivos)
+        const sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebarOverlay'), mobileBtn=document.getElementById('mobileMenuBtn');
+        mobileBtn?.addEventListener('click',()=>{ sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay?.addEventListener('click',()=>{ sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+        const themeToggle=document.getElementById('themeToggle'), savedTheme=localStorage.getItem('theme')||'light';
+        document.documentElement.setAttribute('data-theme',savedTheme);
+        themeToggle.querySelector('#themeStatus').textContent=savedTheme==='dark'?'☀️':'🌙';
+        themeToggle.addEventListener('click',()=>{ const curr=document.documentElement.getAttribute('data-theme'); const nue=curr==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nue); localStorage.setItem('theme',nue); themeToggle.querySelector('#themeStatus').textContent=nue==='dark'?'☀️':'🌙'; });
+        const colorDots=document.querySelectorAll('.color-dot'), savedColor=localStorage.getItem('colorTheme')||'default';
+        document.documentElement.setAttribute('data-color',savedColor);
+        colorDots.forEach(dot=>{ dot.classList.toggle('active',dot.dataset.color===savedColor); dot.addEventListener('click',()=>{ const col=dot.dataset.color; document.documentElement.setAttribute('data-color',col); localStorage.setItem('colorTheme',col); colorDots.forEach(d=>d.classList.remove('active')); dot.classList.add('active'); }); });
     </script>
 </body>
 </html>
