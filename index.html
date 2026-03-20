@@ -3,181 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>POS Terminal</title>
+    <title>Dashboard - POS Terminal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#2563eb">
 </head>
 <body>
     <div class="app-layout">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h1>POS_TERMINAL<span class="terminal-cursor"></span></h1>
-                <small>v2.0 | Gestión integral</small>
+                <h1 id="negocioNombre">POS_TERMINAL<span class="terminal-cursor"></span></h1>
+                <small id="negocioDireccion"></small>
             </div>
             <nav class="sidebar-nav">
-                <a href="ventas.html" class="nav-item">
-                    <i class="fas fa-cash-register"></i>
-                    <span>Punto de Venta</span>
-                </a>
-                <a href="inventario.html" class="nav-item">
-                    <i class="fas fa-boxes"></i>
-                    <span>Inventario</span>
-                </a>
-                <a href="clientes.html" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    <span>Clientes</span>
-                </a>
-                <a href="reportes.html" class="nav-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Reportes</span>
-                </a>
+                <a href="index.html" class="nav-item active"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a href="ventas.html" class="nav-item"><i class="fas fa-cash-register"></i><span>Punto de Venta</span></a>
+                <a href="inventario.html" class="nav-item"><i class="fas fa-boxes"></i><span>Inventario</span></a>
+                <a href="clientes.html" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
+                <a href="reportes.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Reportes</span></a>
+                <a href="ventas-dia.html" class="nav-item"><i class="fas fa-chart-simple"></i><span>IPV del Día</span></a>
+                <a href="cierre-caja.html" class="nav-item"><i class="fas fa-calculator"></i><span>Cierre de Caja</span></a>
+                <a href="reporte-iva.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i><span>Reporte IVA</span></a>
+                <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
             </nav>
             <div class="sidebar-footer">
-                <div class="theme-controls">
-                    <div class="theme-toggle" id="themeToggle">
-                        <span><i class="fas fa-moon"></i> Modo oscuro</span>
-                        <span id="themeStatus">🌙</span>
-                    </div>
-                    <div class="color-select">
-                        <span><i class="fas fa-palette"></i> Tema</span>
-                    </div>
-                    <div class="color-options">
-                        <div class="color-dot" data-color="default" style="background: #2563eb;"></div>
-                        <div class="color-dot" data-color="emerald" style="background: #10b981;"></div>
-                        <div class="color-dot" data-color="violet" style="background: #8b5cf6;"></div>
-                        <div class="color-dot" data-color="rose" style="background: #f43f5e;"></div>
-                        <div class="color-dot" data-color="amber" style="background: #f59e0b;"></div>
-                    </div>
+                <div class="theme-toggle" id="themeToggle"><span><i class="fas fa-moon"></i> Modo oscuro</span><span id="themeStatus">🌙</span></div>
+                <div class="color-options">
+                    <div class="color-dot" data-color="default" style="background: #2563eb;"></div>
+                    <div class="color-dot" data-color="emerald" style="background: #10b981;"></div>
+                    <div class="color-dot" data-color="violet" style="background: #8b5cf6;"></div>
+                    <div class="color-dot" data-color="rose" style="background: #f43f5e;"></div>
+                    <div class="color-dot" data-color="amber" style="background: #f59e0b;"></div>
                 </div>
             </div>
         </aside>
-
-        <!-- Overlay para móvil -->
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <!-- Main Content -->
         <main class="main-content">
             <div class="mobile-header">
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h2>POS Terminal</h2>
+                <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+                <h2>Dashboard</h2>
                 <div></div>
             </div>
 
-            <div class="terminal-card">
-                <h2><i class="fas fa-chart-simple"></i> Dashboard</h2>
-                <div class="stats-preview" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px;">
-                    <div class="terminal-card" style="text-align: center;">
-                        <i class="fas fa-dollar-sign" style="font-size: 2rem; color: var(--primary);"></i>
-                        <h3>Ventas hoy</h3>
-                        <p style="font-size: 1.5rem; font-weight: bold;" id="ventasHoyPreview">$0</p>
+            <!-- Info del negocio -->
+            <div class="terminal-card business-info">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <h2 id="dashboardNombre">Mi Negocio</h2>
+                        <p id="dashboardDireccion"><i class="fas fa-map-marker-alt"></i> Dirección no configurada</p>
+                        <p id="dashboardTelefono"><i class="fas fa-phone"></i> Teléfono no configurado</p>
                     </div>
-                    <div class="terminal-card" style="text-align: center;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--danger);"></i>
-                        <h3>Stock bajo</h3>
-                        <p style="font-size: 1.5rem; font-weight: bold;" id="stockBajoPreview">0</p>
-                    </div>
-                    <div class="terminal-card" style="text-align: center;">
-                        <i class="fas fa-credit-card" style="font-size: 2rem; color: var(--warning);"></i>
-                        <h3>Deudas</h3>
-                        <p style="font-size: 1.5rem; font-weight: bold;" id="deudasPreview">$0</p>
+                    <div style="text-align: right;">
+                        <p><i class="fas fa-calendar"></i> <span id="fechaActual"></span></p>
+                        <p><i class="fas fa-clock"></i> <span id="horaActual"></span></p>
                     </div>
                 </div>
             </div>
 
-            <div class="terminal-card">
-                <h2><i class="fas fa-bolt"></i> Acciones rápidas</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 16px;">
-                    <a href="ventas.html" class="btn-terminal btn-terminal-primary" style="text-align: center; text-decoration: none;">
-                        <i class="fas fa-cash-register"></i> Nueva venta
-                    </a>
-                    <a href="inventario.html" class="btn-terminal" style="text-align: center; text-decoration: none;">
-                        <i class="fas fa-plus"></i> Agregar producto
-                    </a>
-                    <a href="clientes.html" class="btn-terminal" style="text-align: center; text-decoration: none;">
-                        <i class="fas fa-user-plus"></i> Nuevo cliente
-                    </a>
+            <!-- Stats rápidos -->
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
+                <div class="terminal-card" style="text-align: center;">
+                    <i class="fas fa-dollar-sign" style="font-size: 2rem; color: var(--success);"></i>
+                    <h3>Ventas hoy</h3>
+                    <p id="ventasHoy" style="font-size: 1.5rem;">$0</p>
                 </div>
+                <div class="terminal-card" style="text-align: center;">
+                    <i class="fas fa-chart-line" style="font-size: 2rem; color: var(--primary);"></i>
+                    <h3>Ganancia hoy</h3>
+                    <p id="gananciaHoy" style="font-size: 1.5rem;">$0</p>
+                </div>
+                <div class="terminal-card" style="text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--danger);"></i>
+                    <h3>Stock bajo</h3>
+                    <p id="stockBajo" style="font-size: 1.5rem;">0</p>
+                </div>
+                <div class="terminal-card" style="text-align: center;">
+                    <i class="fas fa-users" style="font-size: 2rem; color: var(--warning);"></i>
+                    <h3>Deudas totales</h3>
+                    <p id="deudasTotales" style="font-size: 1.5rem;">$0</p>
+                </div>
+            </div>
+
+            <!-- Gráficos rápidos -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="terminal-card">
+                    <h3><i class="fas fa-chart-pie"></i> Ventas por método de pago (hoy)</h3>
+                    <div id="metodosPagoChart"></div>
+                </div>
+                <div class="terminal-card">
+                    <h3><i class="fas fa-fire"></i> Top 5 productos más vendidos</h3>
+                    <div id="topProductos"></div>
+                </div>
+            </div>
+
+            <!-- Últimas ventas -->
+            <div class="terminal-card">
+                <h3><i class="fas fa-receipt"></i> Últimas ventas</h3>
+                <div id="ultimasVentas" style="max-height: 300px; overflow-y: auto;"></div>
             </div>
         </main>
     </div>
 
     <script src="app.js"></script>
+    <script src="storage-manager.js"></script>
     <script>
+        let productos = [];
+        let ventas = [];
+        let clientes = [];
+
+        async function cargarDatos() {
+            productos = await storage.getData('productos');
+            ventas = await storage.getData('ventas');
+            clientes = await storage.getData('clientes');
+        }
+
+        function actualizarFechaHora() {
+            const ahora = new Date();
+            document.getElementById('fechaActual').textContent = ahora.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('horaActual').textContent = ahora.toLocaleTimeString('es-ES');
+        }
+
+        function cargarInfoNegocio() {
+            const nombre = localStorage.getItem('business_name') || 'Mi Negocio';
+            const direccion = localStorage.getItem('business_address') || '';
+            const telefono = localStorage.getItem('business_phone') || '';
+            
+            document.getElementById('dashboardNombre').textContent = nombre;
+            document.getElementById('dashboardDireccion').innerHTML = direccion ? `<i class="fas fa-map-marker-alt"></i> ${direccion}` : '<i class="fas fa-map-marker-alt"></i> Dirección no configurada';
+            document.getElementById('dashboardTelefono').innerHTML = telefono ? `<i class="fas fa-phone"></i> ${telefono}` : '<i class="fas fa-phone"></i> Teléfono no configurado';
+            document.getElementById('negocioNombre').innerHTML = nombre + '<span class="terminal-cursor"></span>';
+            document.getElementById('negocioDireccion').textContent = direccion;
+        }
+
+        async function actualizarStats() {
+            await cargarDatos();
+            const hoy = new Date().toISOString().split('T')[0];
+            const ventasHoy = ventas.filter(v => v.fecha.split('T')[0] === hoy);
+            const totalVentasHoy = ventasHoy.reduce((sum, v) => sum + v.total, 0);
+            const gananciaHoy = ventasHoy.reduce((sum, v) => sum + (v.ganancia || 0), 0);
+            const stockBajoCount = productos.filter(p => p.stock <= (p.stockMinimo || 5)).length;
+            const deudasTotal = clientes.reduce((sum, c) => sum + (c.deuda || 0), 0);
+            
+            document.getElementById('ventasHoy').textContent = `$${totalVentasHoy.toFixed(2)}`;
+            document.getElementById('gananciaHoy').textContent = `$${gananciaHoy.toFixed(2)}`;
+            document.getElementById('stockBajo').textContent = stockBajoCount;
+            document.getElementById('deudasTotales').textContent = `$${deudasTotal.toFixed(2)}`;
+        }
+
+        function cargarMetodosPago() {
+            const hoy = new Date().toISOString().split('T')[0];
+            const ventasHoy = ventas.filter(v => v.fecha.split('T')[0] === hoy);
+            const metodos = { efectivo: 0, tarjeta: 0, transferencia: 0, credito: 0 };
+            
+            ventasHoy.forEach(v => {
+                if (v.metodo === 'combinado' && v.pagos) {
+                    if (v.pagos.efectivo) metodos.efectivo += v.pagos.efectivo;
+                    if (v.pagos.tarjeta) metodos.tarjeta += v.pagos.tarjeta;
+                    if (v.pagos.transferencia) metodos.transferencia += v.pagos.transferencia;
+                    if (v.pagos.credito) metodos.credito += v.pagos.credito;
+                } else if (metodos[v.metodo] !== undefined) {
+                    metodos[v.metodo] += v.total;
+                }
+            });
+            
+            const container = document.getElementById('metodosPagoChart');
+            const total = Object.values(metodos).reduce((a,b) => a + b, 0);
+            if (total === 0) {
+                container.innerHTML = '<p class="empty-state">No hay ventas hoy</p>';
+                return;
+            }
+            
+            container.innerHTML = Object.entries(metodos).filter(([_, val]) => val > 0).map(([metodo, val]) => {
+                const porcentaje = (val / total) * 100;
+                const icono = { efectivo: '💵', tarjeta: '💳', transferencia: '📱', credito: '📝' }[metodo];
+                return `
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>${icono} ${metodo.toUpperCase()}</span>
+                            <span>$${val.toFixed(2)} (${porcentaje.toFixed(1)}%)</span>
+                        </div>
+                        <div class="progress-bar" style="height: 8px;"><div class="progress-fill" style="width: ${porcentaje}%; background: var(--primary);"></div></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function cargarTopProductos() {
+            const productosVendidos = {};
+            ventas.forEach(venta => {
+                venta.items.forEach(item => {
+                    if (!productosVendidos[item.nombre]) productosVendidos[item.nombre] = 0;
+                    productosVendidos[item.nombre] += item.cantidad;
+                });
+            });
+            
+            const top = Object.entries(productosVendidos).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            const container = document.getElementById('topProductos');
+            if (top.length === 0) {
+                container.innerHTML = '<p class="empty-state">No hay ventas registradas</p>';
+                return;
+            }
+            
+            container.innerHTML = top.map(([nombre, cantidad], i) => `
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+                    <span><strong>${i+1}.</strong> ${nombre}</span>
+                    <span>${cantidad} uds</span>
+                </div>
+            `).join('');
+        }
+
+        function cargarUltimasVentas() {
+            const ultimas = [...ventas].sort((a,b) => new Date(b.fecha) - new Date(a.fecha)).slice(0, 10);
+            const container = document.getElementById('ultimasVentas');
+            if (ultimas.length === 0) {
+                container.innerHTML = '<p class="empty-state">No hay ventas registradas</p>';
+                return;
+            }
+            
+            container.innerHTML = ultimas.map(v => `
+                <div class="cart-item-terminal" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color);">
+                    <div>
+                        <strong>Factura #${v.factura || v.id.slice(-4)}</strong>
+                        <br><small>${new Date(v.fecha).toLocaleString()}</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <strong>$${v.total.toFixed(2)}</strong>
+                        <br><small>${v.items.length} productos</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Inicialización
+        setInterval(actualizarFechaHora, 1000);
+        actualizarFechaHora();
+        cargarInfoNegocio();
+        actualizarStats().then(() => {
+            cargarMetodosPago();
+            cargarTopProductos();
+            cargarUltimasVentas();
+        });
+
         // Sidebar móvil
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        
-        function toggleSidebar() {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('open');
-        }
-        
-        mobileMenuBtn?.addEventListener('click', toggleSidebar);
-        overlay?.addEventListener('click', toggleSidebar);
-        
-        // Tema oscuro/claro
+        mobileMenuBtn?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay?.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+
+        // Tema oscuro
         const themeToggle = document.getElementById('themeToggle');
-        const themeStatus = document.getElementById('themeStatus');
-        
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            themeStatus.textContent = theme === 'dark' ? '☀️' : '🌙';
-        }
-        
         const savedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(savedTheme);
-        
-        themeToggle?.addEventListener('click', () => {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeToggle.querySelector('#themeStatus').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        themeToggle.addEventListener('click', () => {
             const current = document.documentElement.getAttribute('data-theme');
-            setTheme(current === 'dark' ? 'light' : 'dark');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.querySelector('#themeStatus').textContent = newTheme === 'dark' ? '☀️' : '🌙';
         });
-        
-        // Color alternativo
+
+        // Colores
         const colorDots = document.querySelectorAll('.color-dot');
-        function setColor(color) {
-            document.documentElement.setAttribute('data-color', color);
-            localStorage.setItem('colorTheme', color);
-            colorDots.forEach(dot => {
-                dot.classList.toggle('active', dot.dataset.color === color);
-            });
-        }
-        
         const savedColor = localStorage.getItem('colorTheme') || 'default';
-        setColor(savedColor);
-        
+        document.documentElement.setAttribute('data-color', savedColor);
         colorDots.forEach(dot => {
+            dot.classList.toggle('active', dot.dataset.color === savedColor);
             dot.addEventListener('click', () => {
-                setColor(dot.dataset.color);
+                const color = dot.dataset.color;
+                document.documentElement.setAttribute('data-color', color);
+                localStorage.setItem('colorTheme', color);
+                colorDots.forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
             });
         });
-        
-        // Actualizar previews
-        function actualizarPreviews() {
-            const ventas = JSON.parse(localStorage.getItem('ventas') || '[]');
-            const hoy = new Date().toISOString().split('T')[0];
-            const ventasHoy = ventas.filter(v => v.fecha.split('T')[0] === hoy);
-            const totalHoy = ventasHoy.reduce((sum, v) => sum + v.total, 0);
-            document.getElementById('ventasHoyPreview').textContent = `$${totalHoy.toFixed(2)}`;
-            
-            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
-            const stockBajo = productos.filter(p => p.stock <= (p.stockMinimo || 5)).length;
-            document.getElementById('stockBajoPreview').textContent = stockBajo;
-            
-            const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
-            const deudasTotal = clientes.reduce((sum, c) => sum + (c.deuda || 0), 0);
-            document.getElementById('deudasPreview').textContent = `$${deudasTotal.toFixed(2)}`;
-        }
-        
-        actualizarPreviews();
     </script>
+    <style>
+        .progress-bar { background: var(--bg-tertiary); border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.3s; background: var(--primary); }
+        .business-info { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .business-info i, .business-info h2 { color: white; }
+    </style>
 </body>
 </html>
