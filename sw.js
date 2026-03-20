@@ -1,5 +1,5 @@
-// sw.js - Service Worker para funcionamiento offline
-const CACHE_NAME = 'pos-terminal-v2';
+// sw.js - Service Worker para funcionamiento offline CORREGIDO
+const CACHE_NAME = 'pos-terminal-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -19,13 +19,13 @@ const urlsToCache = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
-// Instalación del Service Worker
+// Instalación - cachear todos los archivos importantes
 self.addEventListener('install', event => {
   console.log('Service Worker instalando...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache abierto');
+        console.log('Cacheando archivos...');
         return cache.addAll(urlsToCache);
       })
       .catch(err => console.log('Error al cachear:', err))
@@ -33,7 +33,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activación - limpiar caches antiguos
+// Activación - tomar control inmediatamente
 self.addEventListener('activate', event => {
   console.log('Service Worker activado');
   event.waitUntil(
@@ -46,76 +46,67 @@ self.addEventListener('activate', event => {
           }
         })
       );
+    }).then(() => {
+      console.log('Service Worker listo para controlar la página');
+      return self.clients.claim();
     })
   );
-  self.clients.claim();
 });
 
-// Estrategia: Cache First (con respaldo de red)
+// Estrategia: Cache First con respaldo de red
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Si está en cache, devolverlo
-        if (response) {
-          return response;
-        }
-        
-        // Si no, intentar obtener de la red
-        return fetch(event.request)
-          .then(response => {
-            // Verificar si es una respuesta válida
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            
-            // Clonar y guardar en cache para futuras visitas
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
+  // Ignorar peticiones a APIs externas que no sean necesarias
+  const url = new URL(event.request.url);
+  
+  // Para archivos estáticos de la app, usar cache first
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          if (response) {
+            // Devolver desde cache
             return response;
-          })
-          .catch(() => {
-            // Si falla la red y no está en cache, mostrar página offline
-            if (event.request.destination === 'document') {
-              return caches.match('/offline.html');
-            }
-            
-            // Para imágenes y otros recursos, devolver un placeholder
-            if (event.request.destination === 'image') {
-              return new Response('', {
-                status: 200,
-                statusText: 'OK',
-                headers: new Headers({
-                  'Content-Type': 'image/svg+xml',
-                  'Cache-Control': 'no-store'
-                })
+          }
+          // Si no está en cache, ir a la red
+          return fetch(event.request)
+            .then(networkResponse => {
+              // Guardar en cache para próxima vez
+              if (networkResponse && networkResponse.status === 200) {
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME)
+                  .then(cache => {
+                    cache.put(event.request, responseToCache);
+                  });
+              }
+              return networkResponse;
+            })
+            .catch(() => {
+              // Si es una página HTML, mostrar offline.html
+              if (event.request.destination === 'document') {
+                return caches.match('/offline.html');
+              }
+              // Para otros recursos, devolver respuesta vacía
+              return new Response('Recurso no disponible offline', {
+                status: 503,
+                statusText: 'Service Unavailable'
               });
-            }
-            
-            return new Response('Sin conexión a internet', {
-              status: 503,
-              statusText: 'Service Unavailable'
             });
-          });
-      })
-  );
+        })
+    );
+  } else {
+    // Para recursos externos (FontAwesome, etc.), intentar red primero, luego cache
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+  }
 });
 
 // Sincronización en segundo plano (opcional)
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-ventas') {
     console.log('Sincronizando ventas pendientes...');
-    event.waitUntil(sincronizarVentas());
   }
 });
-
-async function sincronizarVentas() {
-  // Función para sincronizar datos cuando vuelva la conexión
-  const pendingSales = await getPendingSales();
-  for (const sale of pendingSales) {
-    await sendToServer(sale);
-  }
-}
