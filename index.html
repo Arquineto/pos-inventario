@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>POS Terminal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2563eb">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>POS_TERMINAL<span class="terminal-cursor"></span></h1>
+                <small>v2.0 | Gestión integral</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="ventas.html" class="nav-item">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Punto de Venta</span>
+                </a>
+                <a href="inventario.html" class="nav-item">
+                    <i class="fas fa-boxes"></i>
+                    <span>Inventario</span>
+                </a>
+                <a href="clientes.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Clientes</span>
+                </a>
+                <a href="reportes.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reportes</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="theme-controls">
+                    <div class="theme-toggle" id="themeToggle">
+                        <span><i class="fas fa-moon"></i> Modo oscuro</span>
+                        <span id="themeStatus">🌙</span>
+                    </div>
+                    <div class="color-select">
+                        <span><i class="fas fa-palette"></i> Tema</span>
+                    </div>
+                    <div class="color-options">
+                        <div class="color-dot" data-color="default" style="background: #2563eb;"></div>
+                        <div class="color-dot" data-color="emerald" style="background: #10b981;"></div>
+                        <div class="color-dot" data-color="violet" style="background: #8b5cf6;"></div>
+                        <div class="color-dot" data-color="rose" style="background: #f43f5e;"></div>
+                        <div class="color-dot" data-color="amber" style="background: #f59e0b;"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Overlay para móvil -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="mobile-header">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>POS Terminal</h2>
+                <div></div>
+            </div>
+
+            <div class="terminal-card">
+                <h2><i class="fas fa-chart-simple"></i> Dashboard</h2>
+                <div class="stats-preview" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px;">
+                    <div class="terminal-card" style="text-align: center;">
+                        <i class="fas fa-dollar-sign" style="font-size: 2rem; color: var(--primary);"></i>
+                        <h3>Ventas hoy</h3>
+                        <p style="font-size: 1.5rem; font-weight: bold;" id="ventasHoyPreview">$0</p>
+                    </div>
+                    <div class="terminal-card" style="text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--danger);"></i>
+                        <h3>Stock bajo</h3>
+                        <p style="font-size: 1.5rem; font-weight: bold;" id="stockBajoPreview">0</p>
+                    </div>
+                    <div class="terminal-card" style="text-align: center;">
+                        <i class="fas fa-credit-card" style="font-size: 2rem; color: var(--warning);"></i>
+                        <h3>Deudas</h3>
+                        <p style="font-size: 1.5rem; font-weight: bold;" id="deudasPreview">$0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="terminal-card">
+                <h2><i class="fas fa-bolt"></i> Acciones rápidas</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 16px;">
+                    <a href="ventas.html" class="btn-terminal btn-terminal-primary" style="text-align: center; text-decoration: none;">
+                        <i class="fas fa-cash-register"></i> Nueva venta
+                    </a>
+                    <a href="inventario.html" class="btn-terminal" style="text-align: center; text-decoration: none;">
+                        <i class="fas fa-plus"></i> Agregar producto
+                    </a>
+                    <a href="clientes.html" class="btn-terminal" style="text-align: center; text-decoration: none;">
+                        <i class="fas fa-user-plus"></i> Nuevo cliente
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Sidebar móvil
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+        
+        mobileMenuBtn?.addEventListener('click', toggleSidebar);
+        overlay?.addEventListener('click', toggleSidebar);
+        
+        // Tema oscuro/claro
+        const themeToggle = document.getElementById('themeToggle');
+        const themeStatus = document.getElementById('themeStatus');
+        
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeStatus.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+        
+        themeToggle?.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            setTheme(current === 'dark' ? 'light' : 'dark');
+        });
+        
+        // Color alternativo
+        const colorDots = document.querySelectorAll('.color-dot');
+        function setColor(color) {
+            document.documentElement.setAttribute('data-color', color);
+            localStorage.setItem('colorTheme', color);
+            colorDots.forEach(dot => {
+                dot.classList.toggle('active', dot.dataset.color === color);
+            });
+        }
+        
+        const savedColor = localStorage.getItem('colorTheme') || 'default';
+        setColor(savedColor);
+        
+        colorDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                setColor(dot.dataset.color);
+            });
+        });
+        
+        // Actualizar previews
+        function actualizarPreviews() {
+            const ventas = JSON.parse(localStorage.getItem('ventas') || '[]');
+            const hoy = new Date().toISOString().split('T')[0];
+            const ventasHoy = ventas.filter(v => v.fecha.split('T')[0] === hoy);
+            const totalHoy = ventasHoy.reduce((sum, v) => sum + v.total, 0);
+            document.getElementById('ventasHoyPreview').textContent = `$${totalHoy.toFixed(2)}`;
+            
+            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+            const stockBajo = productos.filter(p => p.stock <= (p.stockMinimo || 5)).length;
+            document.getElementById('stockBajoPreview').textContent = stockBajo;
+            
+            const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
+            const deudasTotal = clientes.reduce((sum, c) => sum + (c.deuda || 0), 0);
+            document.getElementById('deudasPreview').textContent = `$${deudasTotal.toFixed(2)}`;
+        }
+        
+        actualizarPreviews();
+    </script>
+</body>
+</html>
