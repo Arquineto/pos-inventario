@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - POS Terminal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h1>POS_TERMINAL<span class="terminal-cursor"></span></h1><small>Configuración</small></div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a href="ventas.html" class="nav-item"><i class="fas fa-cash-register"></i><span>Punto de Venta</span></a>
+                <a href="inventario.html" class="nav-item"><i class="fas fa-boxes"></i><span>Inventario</span></a>
+                <a href="clientes.html" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
+                <a href="reportes.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Reportes</span></a>
+                <a href="ventas-dia.html" class="nav-item"><i class="fas fa-chart-simple"></i><span>IPV del Día</span></a>
+                <a href="cierre-caja.html" class="nav-item"><i class="fas fa-calculator"></i><span>Cierre de Caja</span></a>
+                <a href="reporte-iva.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i><span>Reporte IVA</span></a>
+                <a href="configuracion.html" class="nav-item active"><i class="fas fa-cog"></i><span>Configuración</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="theme-toggle" id="themeToggle"><span><i class="fas fa-moon"></i> Modo oscuro</span><span id="themeStatus">🌙</span></div>
+                <div class="color-options"><div class="color-dot" data-color="default" style="background:#2563eb"></div><div class="color-dot" data-color="emerald" style="background:#10b981"></div><div class="color-dot" data-color="violet" style="background:#8b5cf6"></div><div class="color-dot" data-color="rose" style="background:#f43f5e"></div><div class="color-dot" data-color="amber" style="background:#f59e0b"></div></div>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <main class="main-content">
+            <div class="mobile-header"><button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button><h2><i class="fas fa-cog"></i> Configuración</h2><div></div></div>
+
+            <div class="terminal-card"><h3><i class="fas fa-store"></i> Perfil de la tienda</h3>
+                <input type="text" id="businessName" class="terminal-input" placeholder="Nombre del negocio" style="margin-bottom:12px;">
+                <input type="text" id="businessAddress" class="terminal-input" placeholder="Dirección" style="margin-bottom:12px;">
+                <input type="text" id="businessPhone" class="terminal-input" placeholder="Teléfono" style="margin-bottom:12px;">
+                <input type="number" id="defaultStockMinimo" class="terminal-input" placeholder="Stock mínimo default" value="5">
+                <button id="btnGuardarPerfil" class="btn-terminal btn-terminal-primary" style="margin-top:12px;">Guardar</button>
+            </div>
+
+            <div class="terminal-card"><h3><i class="fas fa-tags"></i> Categorías</h3>
+                <div style="display:flex; gap:8px; margin-bottom:12px;"><input type="text" id="nuevaCategoria" class="terminal-input" placeholder="Nueva categoría"><button id="btnAgregarCategoria" class="btn-terminal">Agregar</button></div>
+                <div id="listaCategorias"></div>
+            </div>
+
+            <div class="terminal-card"><h3><i class="fas fa-database"></i> Respaldos</h3>
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;">
+                    <button id="btnExportarCompleto" class="btn-terminal"><i class="fas fa-download"></i> Exportar</button>
+                    <input type="file" id="importFile" accept=".json"><button id="btnImportarCompleto" class="btn-terminal"><i class="fas fa-upload"></i> Importar</button>
+                    <label class="switch"><input type="checkbox" id="autoBackupToggle"><span class="slider"></span><span>Auto backup diario</span></label>
+                </div>
+                <div id="storageStatus" class="info-text"></div>
+            </div>
+
+            <div class="terminal-card danger-zone"><h3><i class="fas fa-exclamation-triangle"></i> Zona de peligro</h3>
+                <button id="btnResetContadores" class="btn-terminal" style="background:var(--warning);">Resetear numeración automática</button>
+                <button id="btnLimpiarTodo" class="btn-terminal btn-terminal-danger" style="background:var(--danger); margin-top:12px;">Eliminar TODOS los datos</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="storage-manager.js"></script>
+    <script>
+        async function cargarPerfil(){
+            document.getElementById('businessName').value = localStorage.getItem('business_name') || '';
+            document.getElementById('businessAddress').value = localStorage.getItem('business_address') || '';
+            document.getElementById('businessPhone').value = localStorage.getItem('business_phone') || '';
+            document.getElementById('defaultStockMinimo').value = localStorage.getItem('default_stock_minimo') || '5';
+        }
+        document.getElementById('btnGuardarPerfil').addEventListener('click',()=>{
+            localStorage.setItem('business_name', document.getElementById('businessName').value);
+            localStorage.setItem('business_address', document.getElementById('businessAddress').value);
+            localStorage.setItem('business_phone', document.getElementById('businessPhone').value);
+            localStorage.setItem('default_stock_minimo', document.getElementById('defaultStockMinimo').value);
+            alert('Perfil guardado');
+        });
+
+        async function cargarCategorias(){
+            let productos = await storage.getData('productos');
+            let categorias = [...new Set(productos.map(p=>p.categoria).filter(c=>c))];
+            const div = document.getElementById('listaCategorias');
+            div.innerHTML = categorias.map(c=>`<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border-color);"><span>${c}</span><button class="btn-eliminar-cat" data-cat="${c}" style="background:var(--danger); border:none; padding:4px 8px; border-radius:4px;">Eliminar</button></div>`).join('');
+            document.querySelectorAll('.btn-eliminar-cat').forEach(btn=>btn.addEventListener('click',async()=>{
+                let prods = await storage.getData('productos');
+                prods = prods.map(p=>{ if(p.categoria===btn.dataset.cat) p.categoria=''; return p; });
+                await storage.saveData('productos',prods);
+                cargarCategorias();
+            }));
+        }
+        document.getElementById('btnAgregarCategoria').addEventListener('click',()=>{
+            const nueva = document.getElementById('nuevaCategoria').value.trim();
+            if(nueva) alert(`Categoría "${nueva}" agregada. Puedes usarla en productos.`);
+            document.getElementById('nuevaCategoria').value='';
+        });
+
+        document.getElementById('btnExportarCompleto').addEventListener('click',async()=>{
+            const data = await storage.getAllData();
+            const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href=url; a.download=`backup_${new Date().toISOString().slice(0,19)}.json`; a.click(); URL.revokeObjectURL(url);
+        });
+        document.getElementById('btnImportarCompleto').addEventListener('click',()=>{
+            const file = document.getElementById('importFile').files[0];
+            if(file){
+                const reader = new FileReader();
+                reader.onload = async(e)=>{
+                    const data = JSON.parse(e.target.result);
+                    for(const [key,val] of Object.entries(data.data)) await storage.saveData(key,val);
+                    alert('Datos importados. Recarga la página.');
+                    location.reload();
+                };
+                reader.readAsText(file);
+            } else alert('Selecciona un archivo');
+        });
+        const autoBackupToggle = document.getElementById('autoBackupToggle');
+        autoBackupToggle.checked = localStorage.getItem('auto_backup')==='true';
+        autoBackupToggle.addEventListener('change',()=>{ localStorage.setItem('auto_backup', autoBackupToggle.checked); alert(autoBackupToggle.checked?'Auto backup activado':'Auto backup desactivado'); });
+        document.getElementById('storageStatus').innerHTML = `Almacenamiento actual: ${localStorage.getItem('storage_type')||'localStorage'}`;
+
+        document.getElementById('btnResetContadores').addEventListener('click',()=>{
+            localStorage.setItem('ultimo_numero_factura','0');
+            alert('Contadores reseteados');
+        });
+        document.getElementById('btnLimpiarTodo').addEventListener('click',async()=>{
+            if(confirm('¿Eliminar TODOS los datos? Esta acción es irreversible.')){
+                await storage.clearAllData();
+                alert('Datos eliminados. La página se recargará.');
+                location.reload();
+            }
+        });
+
+        cargarPerfil();
+        cargarCategorias();
+
+        // Sidebar, tema, colores
+        const sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebarOverlay'), mobileBtn=document.getElementById('mobileMenuBtn');
+        mobileBtn?.addEventListener('click',()=>{ sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay?.addEventListener('click',()=>{ sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+        const themeToggle=document.getElementById('themeToggle'), savedTheme=localStorage.getItem('theme')||'light';
+        document.documentElement.setAttribute('data-theme',savedTheme);
+        themeToggle.querySelector('#themeStatus').textContent=savedTheme==='dark'?'☀️':'🌙';
+        themeToggle.addEventListener('click',()=>{ const curr=document.documentElement.getAttribute('data-theme'); const nue=curr==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nue); localStorage.setItem('theme',nue); themeToggle.querySelector('#themeStatus').textContent=nue==='dark'?'☀️':'🌙'; });
+        const colorDots=document.querySelectorAll('.color-dot'), savedColor=localStorage.getItem('colorTheme')||'default';
+        document.documentElement.setAttribute('data-color',savedColor);
+        colorDots.forEach(dot=>{ dot.classList.toggle('active',dot.dataset.color===savedColor); dot.addEventListener('click',()=>{ const col=dot.dataset.color; document.documentElement.setAttribute('data-color',col); localStorage.setItem('colorTheme',col); colorDots.forEach(d=>d.classList.remove('active')); dot.classList.add('active'); }); });
+    </script>
+    <style>
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity:0; width:0; height:0; }
+        .slider { position: absolute; cursor: pointer; top:0; left:0; right:0; bottom:0; background:#ccc; transition:0.4s; border-radius:24px; }
+        .slider:before { position: absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:0.4s; border-radius:50%; }
+        input:checked + .slider { background: var(--primary); }
+        input:checked + .slider:before { transform: translateX(26px); }
+        .danger-zone { border: 2px solid var(--danger); background: rgba(239,68,68,0.1); }
+    </style>
+</body>
+</html>
