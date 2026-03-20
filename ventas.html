@@ -2,132 +2,89 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Punto de Venta</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Punto de Venta - POS Terminal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: var(--bg-card); border-radius: 20px; max-width: 500px; width: 90%;
+            max-height: 90vh; overflow-y: auto; padding: 20px;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
+        .payment-method-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--border-color); }
+        .payment-method-input { width: 120px; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); text-align: right; }
+        .payment-total-row { display: flex; justify-content: space-between; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; margin-top: 12px; font-weight: bold; }
+        .payment-difference { padding: 12px; border-radius: 8px; margin-top: 12px; text-align: center; }
+        .payment-difference.positive { background: rgba(16,185,129,0.2); color: var(--success); }
+        .payment-difference.negative { background: rgba(239,68,68,0.2); color: var(--danger); }
+        .filtro-categoria { padding: 6px 12px; border-radius: 20px; background: var(--bg-tertiary); border: none; cursor: pointer; }
+        .filtro-categoria.active { background: var(--primary); color: white; }
+        .product-category { font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px; }
+        .btn-outline { background: transparent; border: 1px solid var(--border-color); }
+        .btn-cierre-dia { background: var(--warning); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .btn-cierre-dia:hover { background: #d97706; }
+        .cierre-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        .cierre-modal-content { background: var(--bg-card); border-radius: 20px; max-width: 400px; width: 90%; padding: 24px; text-align: center; }
+    </style>
 </head>
 <body>
     <div class="app-layout">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h1>POS_TERMINAL<span class="terminal-cursor"></span></h1>
-                <small>Punto de Venta</small>
-            </div>
+            <div class="sidebar-header"><h1>POS_TERMINAL<span class="terminal-cursor"></span></h1><small>Punto de Venta</small></div>
             <nav class="sidebar-nav">
-                <a href="index.html" class="nav-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="ventas.html" class="nav-item active">
-                    <i class="fas fa-cash-register"></i>
-                    <span>Punto de Venta</span>
-                </a>
-                <a href="inventario.html" class="nav-item">
-                    <i class="fas fa-boxes"></i>
-                    <span>Inventario</span>
-                </a>
-                <a href="clientes.html" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    <span>Clientes</span>
-                </a>
-                <a href="reportes.html" class="nav-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Reportes</span>
-                </a>
+                <a href="index.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a href="ventas.html" class="nav-item active"><i class="fas fa-cash-register"></i><span>Punto de Venta</span></a>
+                <a href="inventario.html" class="nav-item"><i class="fas fa-boxes"></i><span>Inventario</span></a>
+                <a href="clientes.html" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
+                <a href="reportes.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Reportes</span></a>
+                <a href="ventas-dia.html" class="nav-item"><i class="fas fa-chart-simple"></i><span>IPV del Día</span></a>
+                <a href="cierre-caja.html" class="nav-item"><i class="fas fa-calculator"></i><span>Cierre de Caja</span></a>
+                <a href="reporte-iva.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i><span>Reporte IVA</span></a>
+                <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
             </nav>
             <div class="sidebar-footer">
-                <div class="theme-controls">
-                    <div class="theme-toggle" id="themeToggle">
-                        <span><i class="fas fa-moon"></i> Modo oscuro</span>
-                        <span id="themeStatus">🌙</span>
-                    </div>
-                </div>
+                <div class="theme-toggle" id="themeToggle"><span><i class="fas fa-moon"></i> Modo oscuro</span><span id="themeStatus">🌙</span></div>
+                <div class="color-options"><div class="color-dot" data-color="default" style="background:#2563eb"></div><div class="color-dot" data-color="emerald" style="background:#10b981"></div><div class="color-dot" data-color="violet" style="background:#8b5cf6"></div><div class="color-dot" data-color="rose" style="background:#f43f5e"></div><div class="color-dot" data-color="amber" style="background:#f59e0b"></div></div>
             </div>
         </aside>
-
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <main class="main-content">
             <div class="mobile-header">
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h2>🛒 Punto de Venta</h2>
-                <div></div>
+                <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+                <h2><i class="fas fa-cash-register"></i> Punto de Venta</h2>
+                <button id="btnCierreDia" class="btn-cierre-dia"><i class="fas fa-lock"></i> Cerrar día</button>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                <!-- Panel izquierdo: Productos -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="terminal-card">
-                    <h2><i class="fas fa-barcode"></i> Productos</h2>
-                    <div class="search-box">
-                        <input type="text" id="buscarProductoVenta" class="terminal-input" placeholder="🔍 Buscar producto...">
+                    <h2><i class="fas fa-search"></i> Productos</h2>
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                        <input type="text" id="buscarProducto" class="terminal-input" style="flex:1;" placeholder="🔍 Buscar por nombre...">
+                        <input type="text" id="codigoBarras" class="terminal-input" style="width:150px;" placeholder="📷 Código">
+                        <button id="btnBuscarCodigo" class="btn-terminal">Buscar</button>
                     </div>
-                    <div id="productosGrid" class="products-grid">
-                        <!-- Productos cargados dinámicamente -->
-                    </div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;" id="categoriasFiltro"></div>
+                    <div id="productosGrid" class="products-grid" style="max-height: 500px; overflow-y: auto;"></div>
                 </div>
-
-                <!-- Panel derecho: Carrito y pago -->
+                
                 <div>
                     <div class="terminal-card">
                         <h2><i class="fas fa-shopping-cart"></i> Carrito</h2>
-                        <div id="carritoLista" class="cart-list" style="max-height: 300px; overflow-y: auto;">
-                            <div class="empty-cart">🛍️ Carrito vacío</div>
+                        <div id="carritoLista" style="max-height: 300px; overflow-y: auto; min-height: 150px;"></div>
+                        <div class="cart-total" style="display: flex; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--border-color);">
+                            <strong>Total:</strong><strong style="font-size:1.5rem; color:var(--primary);">$<span id="totalCarrito">0</span></strong>
                         </div>
-                        <div class="cart-total" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
-                            <strong>Total:</strong>
-                            <strong style="font-size: 1.5rem; color: var(--primary);">$<span id="totalCarrito">0</span></strong>
-                        </div>
-                    </div>
-
-                    <div class="terminal-card">
-                        <h2><i class="fas fa-credit-card"></i> Método de pago</h2>
-                        <div class="payment-methods">
-                            <button class="payment-method-btn" data-metodo="efectivo">
-                                <i class="fas fa-money-bill-wave"></i> Efectivo
-                            </button>
-                            <button class="payment-method-btn" data-metodo="transferencia">
-                                <i class="fas fa-qrcode"></i> Transferencia/QR
-                            </button>
-                            <button class="payment-method-btn" data-metodo="tarjeta">
-                                <i class="fas fa-credit-card"></i> Tarjeta
-                            </button>
-                            <button class="payment-method-btn" data-metodo="credito">
-                                <i class="fas fa-hand-holding-usd"></i> Crédito
-                            </button>
-                        </div>
-
-                        <div id="panelEfectivo" class="payment-panel hidden">
-                            <label>💰 Monto recibido:</label>
-                            <input type="number" id="montoPagado" class="terminal-input" placeholder="0.00">
-                            <p>💵 Cambio: <strong id="cambio">$0</strong></p>
-                            <button id="btnConfirmarEfectivo" class="btn-terminal btn-terminal-primary">Confirmar venta</button>
-                        </div>
-
-                        <div id="panelCredito" class="payment-panel hidden">
-                            <label>👤 Cliente:</label>
-                            <select id="clienteCredito" class="terminal-input">
-                                <option value="">-- Seleccionar cliente --</option>
-                            </select>
-                            <button id="btnNuevoCliente" class="btn-terminal">+ Nuevo cliente</button>
-                            <button id="btnConfirmarCredito" class="btn-terminal btn-terminal-primary">Vender a crédito</button>
-                        </div>
-
-                        <div id="panelTransferencia" class="payment-panel hidden">
-                            <p><i class="fas fa-qrcode"></i> Escanea el QR o transfiere a:</p>
-                            <div class="qr-placeholder">
-                                <p>📱 Cuenta: <strong>mi.negocio@banco.com</strong></p>
-                                <p>📝 Referencia: <strong id="refTransferencia">POS-</strong></p>
-                            </div>
-                            <button id="btnConfirmarTransferencia" class="btn-terminal btn-terminal-primary">Confirmar venta</button>
-                        </div>
-
-                        <div id="panelTarjeta" class="payment-panel hidden">
-                            <p><i class="fas fa-credit-card"></i> Procesar con terminal de pago</p>
-                            <button id="btnConfirmarTarjeta" class="btn-terminal btn-terminal-primary">Confirmar venta</button>
+                        <div style="display: flex; gap: 12px; margin-top: 12px;">
+                            <button id="btnLimpiarCarrito" class="btn-terminal btn-outline" style="flex:1;"><i class="fas fa-trash"></i> Limpiar</button>
+                            <button id="btnConfirmarVenta" class="btn-terminal btn-terminal-primary" style="flex:1;"><i class="fas fa-check"></i> Confirmar</button>
                         </div>
                     </div>
                 </div>
@@ -135,336 +92,183 @@
         </main>
     </div>
 
+    <div id="modalPago" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header"><h3><i class="fas fa-credit-card"></i> Métodos de Pago</h3><button class="modal-close" id="btnCerrarModal">&times;</button></div>
+            <div class="modal-body">
+                <div class="payment-summary"><p>Total: <strong id="modalTotal">$0</strong></p><p>Factura: <strong id="facturaNumero">#0001</strong></p></div>
+                <div class="payment-combined-panel">
+                    <h4>Pagos combinados</h4>
+                    <div class="payment-method-item"><div class="payment-method-label"><i class="fas fa-money-bill-wave"></i> Efectivo</div><input type="number" id="pagoEfectivo" class="payment-method-input" value="0" step="0.01"></div>
+                    <div class="payment-method-item"><div class="payment-method-label"><i class="fas fa-credit-card"></i> Tarjeta</div><input type="number" id="pagoTarjeta" class="payment-method-input" value="0" step="0.01"></div>
+                    <div class="payment-method-item"><div class="payment-method-label"><i class="fas fa-qrcode"></i> Transferencia</div><input type="number" id="pagoTransferencia" class="payment-method-input" value="0" step="0.01"></div>
+                    <div class="payment-method-item"><div class="payment-method-label"><i class="fas fa-hand-holding-usd"></i> Crédito</div><input type="number" id="pagoCredito" class="payment-method-input" value="0" step="0.01"></div>
+                    <div class="payment-total-row"><span>Total pagado:</span><span id="totalPagado">$0</span></div>
+                    <div id="diferenciaPago" class="payment-difference"></div>
+                    <div class="btn-payment-action" style="display: flex; gap: 12px; margin-top: 12px;">
+                        <button id="btnResetPagos" class="btn-terminal btn-outline">Resetear</button>
+                        <button id="btnCompletarVenta" class="btn-terminal btn-terminal-primary">Completar</button>
+                    </div>
+                </div>
+                <div style="margin-top: 16px;"><h4>Pago único</h4><div style="display: grid; grid-template-columns: repeat(4,1fr); gap:8px;"><button class="btn-pago-simple" data-metodo="efectivo">💵 Efectivo</button><button class="btn-pago-simple" data-metodo="tarjeta">💳 Tarjeta</button><button class="btn-pago-simple" data-metodo="transferencia">📱 Transferencia</button><button class="btn-pago-simple" data-metodo="credito">📝 Crédito</button></div></div>
+                <div id="panelClienteCredito" style="display:none; margin-top:16px;"><label>Cliente:</label><select id="clienteCreditoSelect" class="terminal-input"></select><button id="btnNuevoClienteCredito" class="btn-terminal">+ Nuevo</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalCierreDia" class="cierre-modal" style="display:none;">
+        <div class="cierre-modal-content">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--warning);"></i>
+            <h3>¿Cerrar la jornada?</h3>
+            <p>Al cerrar el día se generará un reporte de ventas y se iniciará un nuevo conteo para mañana.</p>
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                <button id="btnConfirmarCierre" class="btn-terminal btn-terminal-primary">Cerrar día</button>
+                <button id="btnCancelarCierre" class="btn-terminal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
+    <script src="storage-manager.js"></script>
     <script>
         let carrito = [];
-        let metodoSeleccionado = null;
-        
-        function cargarProductosGrid() {
-            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
-            const busqueda = document.getElementById('buscarProductoVenta')?.value.toLowerCase() || '';
-            
-            const filtrados = productos.filter(p => 
-                p.nombre.toLowerCase().includes(busqueda) || 
-                p.codigo.toLowerCase().includes(busqueda)
-            );
-            
-            const grid = document.getElementById('productosGrid');
-            if (filtrados.length === 0) {
-                grid.innerHTML = '<div class="empty-state">📭 No hay productos</div>';
-                return;
-            }
-            
-            grid.innerHTML = filtrados.map(p => {
-                const stockBajo = p.stock <= (p.stockMinimo || 5);
-                return `
-                    <div class="product-card-grid" onclick="agregarAlCarrito('${p.id}')">
-                        ${stockBajo ? '<div class="stock-badge">⚠️ Stock bajo</div>' : ''}
-                        <div class="product-icon">
-                            <i class="fas fa-box"></i>
-                        </div>
-                        <div class="product-name">${p.nombre}</div>
-                        <div class="product-price">$${p.precio.toFixed(2)}</div>
-                        <div class="product-stock">Stock: ${p.stock} uds</div>
-                    </div>
-                `;
-            }).join('');
+        let currentFacturaNumero = 1;
+        let productos = [];
+        let categorias = [];
+
+        async function cargarNumeroFactura() {
+            const saved = localStorage.getItem('ultimo_numero_factura');
+            currentFacturaNumero = saved ? parseInt(saved) + 1 : 1;
         }
-        
-        function agregarAlCarrito(productoId) {
-            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
-            const producto = productos.find(p => p.id === productoId);
-            
-            if (!producto) {
-                alert('Producto no encontrado');
-                return;
-            }
-            
-            if (producto.stock <= 0) {
-                alert('Producto sin stock disponible');
-                return;
-            }
-            
-            const itemExistente = carrito.find(i => i.id === productoId);
-            if (itemExistente) {
-                if (producto.stock < itemExistente.cantidad + 1) {
-                    alert(`Solo quedan ${producto.stock} unidades`);
-                    return;
-                }
-                itemExistente.cantidad++;
-            } else {
-                carrito.push({
-                    id: producto.id,
-                    nombre: producto.nombre,
-                    precio: producto.precio,
-                    cantidad: 1
-                });
-            }
-            
+        function guardarNumeroFactura() { localStorage.setItem('ultimo_numero_factura', currentFacturaNumero); }
+
+        async function cargarProductos() {
+            productos = await storage.getData('productos');
+            categorias = [...new Set(productos.map(p => p.categoria).filter(c => c))];
+            const filtroDiv = document.getElementById('categoriasFiltro');
+            filtroDiv.innerHTML = '<button class="filtro-categoria active" data-categoria="todos">Todos</button>' + categorias.map(cat => `<button class="filtro-categoria" data-categoria="${cat}">${cat}</button>`).join('');
+            document.querySelectorAll('.filtro-categoria').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('.filtro-categoria').forEach(b => b.classList.remove('active')); btn.classList.add('active'); filtrarProductos(); }));
+            filtrarProductos();
+        }
+
+        function filtrarProductos() {
+            const busqueda = document.getElementById('buscarProducto').value.toLowerCase();
+            const catActiva = document.querySelector('.filtro-categoria.active')?.dataset.categoria || 'todos';
+            let filtrados = productos.filter(p => p.nombre.toLowerCase().includes(busqueda) || (p.codigo && p.codigo.toLowerCase().includes(busqueda)));
+            if (catActiva !== 'todos') filtrados = filtrados.filter(p => p.categoria === catActiva);
+            const grid = document.getElementById('productosGrid');
+            if (!filtrados.length) { grid.innerHTML = '<div class="empty-state">📭 No hay productos</div>'; return; }
+            grid.innerHTML = filtrados.map(p => `<div class="product-card-grid" onclick="agregarAlCarrito('${p.id}')">${p.stock <= (p.stockMinimo||5) ? '<div class="stock-badge">⚠️ Stock bajo</div>' : ''}<div class="product-icon"><i class="fas fa-box"></i></div><div class="product-name">${p.nombre}</div><div class="product-price">$${p.precio.toFixed(2)}</div><div class="product-stock">Stock: ${p.stock} uds</div>${p.categoria ? `<div class="product-category">${p.categoria}</div>` : ''}</div>`).join('');
+        }
+
+        function agregarAlCarrito(id) {
+            const p = productos.find(p => p.id === id);
+            if (!p || p.stock <= 0) { alert('Sin stock'); return; }
+            const existente = carrito.find(i => i.id === id);
+            if (existente) { if (p.stock < existente.cantidad + 1) { alert(`Solo quedan ${p.stock}`); return; } existente.cantidad++; }
+            else carrito.push({ id: p.id, nombre: p.nombre, precio: p.precio, costo: p.costo || 0, cantidad: 1 });
             actualizarCarrito();
         }
-        
+
         function actualizarCarrito() {
-            const carritoDiv = document.getElementById('carritoLista');
+            const div = document.getElementById('carritoLista');
             let total = 0;
-            
-            if (carrito.length === 0) {
-                carritoDiv.innerHTML = '<div class="empty-cart">🛍️ Carrito vacío</div>';
-                document.getElementById('totalCarrito').textContent = '0';
-                return;
-            }
-            
-            carritoDiv.innerHTML = carrito.map((item, index) => {
-                const subtotal = item.precio * item.cantidad;
-                total += subtotal;
-                return `
-                    <div class="cart-item-terminal">
-                        <div class="cart-item-info">
-                            <strong>${item.nombre}</strong>
-                            <small>$${item.precio} x ${item.cantidad}</small>
-                        </div>
-                        <div class="cart-item-actions">
-                            <button class="btn-qty" data-index="${index}" data-delta="-1">-</button>
-                            <span>${item.cantidad}</span>
-                            <button class="btn-qty" data-index="${index}" data-delta="1">+</button>
-                            <button class="btn-remove" data-index="${index}">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
+            if (!carrito.length) { div.innerHTML = '<div class="empty-cart">🛍️ Carrito vacío</div>'; document.getElementById('totalCarrito').textContent = '0'; return; }
+            div.innerHTML = carrito.map((item, idx) => { total += item.precio * item.cantidad; return `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border-color);"><div><strong>${item.nombre}</strong><br><small>$${item.precio} x ${item.cantidad}</small></div><div><span>$${(item.precio*item.cantidad).toFixed(2)}</span><button class="btn-qty" data-index="${idx}" data-delta="-1">-</button><span>${item.cantidad}</span><button class="btn-qty" data-index="${idx}" data-delta="1">+</button><button class="btn-remove" data-index="${idx}">🗑️</button></div></div>`; }).join('');
             document.getElementById('totalCarrito').textContent = total.toFixed(2);
-            
-            document.querySelectorAll('.btn-qty').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const index = parseInt(btn.dataset.index);
-                    const delta = parseInt(btn.dataset.delta);
-                    const productos = JSON.parse(localStorage.getItem('productos') || '[]');
-                    const producto = productos.find(p => p.id === carrito[index].id);
-                    
-                    const nuevaCantidad = carrito[index].cantidad + delta;
-                    if (nuevaCantidad <= 0) {
-                        carrito.splice(index, 1);
-                    } else if (producto && producto.stock >= nuevaCantidad) {
-                        carrito[index].cantidad = nuevaCantidad;
-                    } else {
-                        alert(`Stock insuficiente. Solo quedan ${producto?.stock || 0} unidades`);
-                        return;
-                    }
-                    actualizarCarrito();
-                });
-            });
-            
-            document.querySelectorAll('.btn-remove').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const index = parseInt(btn.dataset.index);
-                    carrito.splice(index, 1);
-                    actualizarCarrito();
-                });
-            });
+            document.querySelectorAll('.btn-qty').forEach(btn => btn.addEventListener('click', () => { const idx=parseInt(btn.dataset.index), delta=parseInt(btn.dataset.delta), p=productos.find(p=>p.id===carrito[idx].id), nc=carrito[idx].cantidad+delta; if(nc<=0) carrito.splice(idx,1); else if(p && p.stock>=nc) carrito[idx].cantidad=nc; else alert('Stock insuficiente'); actualizarCarrito(); }));
+            document.querySelectorAll('.btn-remove').forEach(btn => btn.addEventListener('click', () => { carrito.splice(parseInt(btn.dataset.index),1); actualizarCarrito(); }));
         }
-        
-        function registrarVenta(metodo, clienteId = null) {
-            if (carrito.length === 0) {
-                alert('No hay productos en el carrito');
-                return false;
-            }
-            
-            let productos = JSON.parse(localStorage.getItem('productos') || '[]');
-            let totalVenta = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-            
-            for (const item of carrito) {
-                const producto = productos.find(p => p.id === item.id);
-                if (producto.stock < item.cantidad) {
-                    alert(`Stock insuficiente para ${producto.nombre}`);
-                    return false;
-                }
-            }
-            
-            for (const item of carrito) {
-                const productoIndex = productos.findIndex(p => p.id === item.id);
-                productos[productoIndex].stock -= item.cantidad;
-            }
-            
-            let ventas = JSON.parse(localStorage.getItem('ventas') || '[]');
-            const nuevaVenta = {
-                id: Date.now().toString(),
-                fecha: new Date().toISOString(),
-                items: [...carrito],
-                total: totalVenta,
-                metodo: metodo,
-                clienteId: clienteId
-            };
-            
-            ventas.push(nuevaVenta);
-            localStorage.setItem('productos', JSON.stringify(productos));
-            localStorage.setItem('ventas', JSON.stringify(ventas));
-            
-            if (metodo === 'credito' && clienteId) {
-                let clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
-                const clienteIndex = clientes.findIndex(c => c.id === clienteId);
-                if (clienteIndex !== -1) {
-                    clientes[clienteIndex].deuda = (clientes[clienteIndex].deuda || 0) + totalVenta;
-                    clientes[clienteIndex].ultimaCompra = new Date().toISOString();
-                    localStorage.setItem('clientes', JSON.stringify(clientes));
-                }
-            }
-            
-            return true;
+
+        document.getElementById('btnLimpiarCarrito').addEventListener('click', () => { if(confirm('¿Limpiar carrito?')) { carrito=[]; actualizarCarrito(); } });
+
+        const modal = document.getElementById('modalPago');
+        document.getElementById('btnConfirmarVenta').addEventListener('click', async () => {
+            if(!carrito.length) { alert('Carrito vacío'); return; }
+            await cargarNumeroFactura();
+            document.getElementById('modalTotal').textContent = `$${document.getElementById('totalCarrito').textContent}`;
+            document.getElementById('facturaNumero').textContent = `#${String(currentFacturaNumero).padStart(4,'0')}`;
+            document.getElementById('pagoEfectivo').value = '0'; document.getElementById('pagoTarjeta').value = '0';
+            document.getElementById('pagoTransferencia').value = '0'; document.getElementById('pagoCredito').value = '0';
+            actualizarTotalPagado();
+            modal.style.display = 'flex';
+        });
+
+        function actualizarTotalPagado() {
+            const efectivo = parseFloat(document.getElementById('pagoEfectivo').value)||0, tarjeta = parseFloat(document.getElementById('pagoTarjeta').value)||0, transferencia = parseFloat(document.getElementById('pagoTransferencia').value)||0, credito = parseFloat(document.getElementById('pagoCredito').value)||0;
+            const totalPagado = efectivo+tarjeta+transferencia+credito, totalVenta = parseFloat(document.getElementById('totalCarrito').textContent), diferencia = totalPagado - totalVenta;
+            document.getElementById('totalPagado').textContent = `$${totalPagado.toFixed(2)}`;
+            const diffDiv = document.getElementById('diferenciaPago');
+            if(Math.abs(diferencia)<0.01) { diffDiv.innerHTML='<i class="fas fa-check-circle"></i> Pago exacto'; diffDiv.className='payment-difference positive'; }
+            else if(diferencia>0) { diffDiv.innerHTML=`<i class="fas fa-money-bill-wave"></i> Cambio: $${diferencia.toFixed(2)}`; diffDiv.className='payment-difference positive'; }
+            else { diffDiv.innerHTML=`<i class="fas fa-exclamation-triangle"></i> Faltante: $${Math.abs(diferencia).toFixed(2)}`; diffDiv.className='payment-difference negative'; }
         }
-        
-        function ocultarTodosPaneles() {
-            document.querySelectorAll('.payment-panel').forEach(p => p.classList.add('hidden'));
-        }
-        
-        function cargarClientesSelect() {
-            const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
-            const select = document.getElementById('clienteCredito');
-            select.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
-            clientes.forEach(c => {
-                select.innerHTML += `<option value="${c.id}">${c.nombre} ${c.deuda > 0 ? `(deuda: $${c.deuda})` : ''}</option>`;
-            });
-        }
-        
-        // Event listeners
-        document.querySelectorAll('.payment-method-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                metodoSeleccionado = btn.dataset.metodo;
-                ocultarTodosPaneles();
-                
-                if (metodoSeleccionado === 'efectivo') {
-                    document.getElementById('panelEfectivo').classList.remove('hidden');
-                    document.getElementById('montoPagado').value = '';
-                    document.getElementById('cambio').textContent = '0';
-                } else if (metodoSeleccionado === 'credito') {
-                    document.getElementById('panelCredito').classList.remove('hidden');
-                    cargarClientesSelect();
-                } else if (metodoSeleccionado === 'transferencia') {
-                    document.getElementById('panelTransferencia').classList.remove('hidden');
-                    document.getElementById('refTransferencia').textContent = `POS-${Date.now()}`;
-                } else if (metodoSeleccionado === 'tarjeta') {
-                    document.getElementById('panelTarjeta').classList.remove('hidden');
-                }
-            });
+
+        document.getElementById('pagoEfectivo').addEventListener('input',actualizarTotalPagado);
+        document.getElementById('pagoTarjeta').addEventListener('input',actualizarTotalPagado);
+        document.getElementById('pagoTransferencia').addEventListener('input',actualizarTotalPagado);
+        document.getElementById('pagoCredito').addEventListener('input',actualizarTotalPagado);
+        document.getElementById('btnResetPagos').addEventListener('click',()=>{ document.getElementById('pagoEfectivo').value='0'; document.getElementById('pagoTarjeta').value='0'; document.getElementById('pagoTransferencia').value='0'; document.getElementById('pagoCredito').value='0'; actualizarTotalPagado(); });
+
+        document.querySelectorAll('.btn-pago-simple').forEach(btn=>btn.addEventListener('click',()=>{ const metodo=btn.dataset.metodo, total=parseFloat(document.getElementById('totalCarrito').textContent); if(metodo==='credito') document.getElementById('panelClienteCredito').style.display='block'; else document.getElementById('panelClienteCredito').style.display='none'; const pagos={efectivo:0,tarjeta:0,transferencia:0,credito:0}; pagos[metodo]=total; document.getElementById('pagoEfectivo').value=pagos.efectivo; document.getElementById('pagoTarjeta').value=pagos.tarjeta; document.getElementById('pagoTransferencia').value=pagos.transferencia; document.getElementById('pagoCredito').value=pagos.credito; actualizarTotalPagado(); }));
+
+        async function cargarClientesSelect() { const clientes=await storage.getData('clientes'); const select=document.getElementById('clienteCreditoSelect'); select.innerHTML='<option value="">-- Seleccionar --</option>'; clientes.forEach(c=>{ select.innerHTML+=`<option value="${c.id}">${c.nombre} ${c.deuda>0?`(deuda: $${c.deuda})`:''}</option>`; }); }
+        document.getElementById('btnNuevoClienteCredito').addEventListener('click',async()=>{ const nombre=prompt('Nombre:'); if(nombre){ let clientes=await storage.getData('clientes'); clientes.push({id:Date.now().toString(),nombre,telefono:prompt('Teléfono:')||'',deuda:0,fechaRegistro:new Date().toISOString()}); await storage.saveData('clientes',clientes); cargarClientesSelect(); alert(`Cliente ${nombre} agregado`); } });
+
+        document.getElementById('btnCompletarVenta').addEventListener('click',async()=>{
+            const efectivo=parseFloat(document.getElementById('pagoEfectivo').value)||0, tarjeta=parseFloat(document.getElementById('pagoTarjeta').value)||0, transferencia=parseFloat(document.getElementById('pagoTransferencia').value)||0, credito=parseFloat(document.getElementById('pagoCredito').value)||0;
+            const totalPagado=efectivo+tarjeta+transferencia+credito, totalVenta=parseFloat(document.getElementById('totalCarrito').textContent);
+            if(totalPagado<totalVenta-0.01){ alert(`Faltante: $${(totalVenta-totalPagado).toFixed(2)}`); return; }
+            let clienteId=null; if(credito>0){ clienteId=document.getElementById('clienteCreditoSelect').value; if(!clienteId){ alert('Selecciona cliente'); return; } }
+            let productosActuales=await storage.getData('productos');
+            for(const item of carrito){ const prod=productosActuales.find(p=>p.id===item.id); if(prod.stock<item.cantidad){ alert(`Stock insuficiente para ${prod.nombre}`); return; } }
+            for(const item of carrito){ const idx=productosActuales.findIndex(p=>p.id===item.id); productosActuales[idx].stock-=item.cantidad; }
+            await storage.saveData('productos',productosActuales);
+            const iva=parseFloat(localStorage.getItem('iva_rate')||'0'); const subtotal=totalVenta/(1+iva/100); const montoIVA=totalVenta-subtotal;
+            const nuevaVenta={ id:Date.now().toString(), factura:String(currentFacturaNumero).padStart(4,'0'), fecha:new Date().toISOString(), items:[...carrito], subtotal, iva:montoIVA, total:totalVenta, metodo:'combinado', pagos:{efectivo,tarjeta,transferencia,credito}, clienteId, ganancia:carrito.reduce((s,i)=>s+((i.precio-(i.costo||0))*i.cantidad),0) };
+            let ventas=await storage.getData('ventas'); ventas.push(nuevaVenta); await storage.saveData('ventas',ventas);
+            if(clienteId&&credito>0){ let clientes=await storage.getData('clientes'); const idx=clientes.findIndex(c=>c.id===clienteId); if(idx!==-1){ clientes[idx].deuda=(clientes[idx].deuda||0)+totalVenta; await storage.saveData('clientes',clientes); } }
+            let cajaDiaria=await storage.getData('caja_diaria'); const hoy=new Date().toISOString().split('T')[0]; let dia=cajaDiaria.find(d=>d.fecha===hoy); if(!dia){ dia={fecha:hoy,ventas:[],total_efectivo:0,total_tarjeta:0,total_transferencia:0,total_credito:0,total_ventas:0}; cajaDiaria.push(dia); }
+            dia.ventas.push(nuevaVenta.id); dia.total_efectivo+=efectivo; dia.total_tarjeta+=tarjeta; dia.total_transferencia+=transferencia; dia.total_credito+=credito; dia.total_ventas+=totalVenta;
+            await storage.saveData('caja_diaria',cajaDiaria);
+            currentFacturaNumero++; guardarNumeroFactura();
+            alert(`✅ Venta #${nuevaVenta.factura}\nTotal: $${totalVenta.toFixed(2)}`);
+            carrito=[]; actualizarCarrito(); modal.style.display='none'; cargarProductos();
         });
-        
-        document.getElementById('btnConfirmarEfectivo')?.addEventListener('click', () => {
-            const total = parseFloat(document.getElementById('totalCarrito').textContent);
-            const montoPagado = parseFloat(document.getElementById('montoPagado').value);
-            if (montoPagado >= total) {
-                if (registrarVenta('efectivo')) {
-                    const cambio = montoPagado - total;
-                    alert(`✅ Venta realizada\n💵 Cambio: $${cambio.toFixed(2)}`);
-                    carrito = [];
-                    actualizarCarrito();
-                    ocultarTodosPaneles();
-                    metodoSeleccionado = null;
-                    cargarProductosGrid();
-                }
-            } else {
-                alert(`El monto es insuficiente. Total: $${total}`);
-            }
+
+        document.getElementById('btnCerrarModal').addEventListener('click',()=>modal.style.display='none');
+        document.getElementById('buscarProducto').addEventListener('input',filtrarProductos);
+        document.getElementById('btnBuscarCodigo').addEventListener('click',()=>{ const cod=document.getElementById('codigoBarras').value.trim(); const p=productos.find(p=>p.codigo===cod); if(p) agregarAlCarrito(p.id); else alert('Producto no encontrado'); document.getElementById('codigoBarras').value=''; });
+        document.getElementById('codigoBarras').addEventListener('keypress',e=>{ if(e.key==='Enter') document.getElementById('btnBuscarCodigo').click(); });
+
+        // Cierre de día
+        const cierreModal = document.getElementById('modalCierreDia');
+        document.getElementById('btnCierreDia').addEventListener('click',()=>cierreModal.style.display='flex');
+        document.getElementById('btnConfirmarCierre').addEventListener('click',async()=>{
+            const hoy=new Date().toISOString().split('T')[0];
+            const ventasDia=await storage.getData('ventas'); const ventasHoy=ventasDia.filter(v=>v.fecha.split('T')[0]===hoy);
+            const cierres=await storage.getData('cierres_caja')||[];
+            cierres.push({fecha:hoy,cierre:new Date().toISOString(),total_ventas:ventasHoy.reduce((s,v)=>s+v.total,0),ventas:ventasHoy.length});
+            await storage.saveData('cierres_caja',cierres);
+            alert('✅ Día cerrado correctamente');
+            cierreModal.style.display='none';
         });
-        
-        document.getElementById('btnConfirmarCredito')?.addEventListener('click', () => {
-            const clienteId = document.getElementById('clienteCredito').value;
-            if (!clienteId) {
-                alert('Selecciona un cliente');
-                return;
-            }
-            if (registrarVenta('credito', clienteId)) {
-                alert('✅ Venta registrada a crédito');
-                carrito = [];
-                actualizarCarrito();
-                ocultarTodosPaneles();
-                metodoSeleccionado = null;
-                cargarProductosGrid();
-            }
-        });
-        
-        document.getElementById('btnNuevoCliente')?.addEventListener('click', () => {
-            const nombre = prompt('Nombre del cliente:');
-            const telefono = prompt('Teléfono (opcional):');
-            if (nombre) {
-                let clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
-                const nuevoCliente = {
-                    id: Date.now().toString(),
-                    nombre: nombre,
-                    telefono: telefono || '',
-                    deuda: 0,
-                    fechaRegistro: new Date().toISOString()
-                };
-                clientes.push(nuevoCliente);
-                localStorage.setItem('clientes', JSON.stringify(clientes));
-                cargarClientesSelect();
-                alert(`Cliente ${nombre} agregado`);
-            }
-        });
-        
-        document.getElementById('btnConfirmarTransferencia')?.addEventListener('click', () => {
-            if (registrarVenta('transferencia')) {
-                alert('✅ Venta registrada. Esperando confirmación de pago.');
-                carrito = [];
-                actualizarCarrito();
-                ocultarTodosPaneles();
-                metodoSeleccionado = null;
-                cargarProductosGrid();
-            }
-        });
-        
-        document.getElementById('btnConfirmarTarjeta')?.addEventListener('click', () => {
-            if (registrarVenta('tarjeta')) {
-                alert('✅ Venta registrada. Procesar con terminal.');
-                carrito = [];
-                actualizarCarrito();
-                ocultarTodosPaneles();
-                metodoSeleccionado = null;
-                cargarProductosGrid();
-            }
-        });
-        
-        document.getElementById('montoPagado')?.addEventListener('input', () => {
-            const total = parseFloat(document.getElementById('totalCarrito').textContent);
-            const pagado = parseFloat(document.getElementById('montoPagado').value) || 0;
-            const cambio = pagado - total;
-            document.getElementById('cambio').textContent = cambio >= 0 ? `$${cambio.toFixed(2)}` : '$0';
-        });
-        
-        document.getElementById('buscarProductoVenta')?.addEventListener('input', cargarProductosGrid);
-        
-        // Inicializar
-        cargarProductosGrid();
-        
-        // Sidebar móvil
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        
-        function toggleSidebar() {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('open');
-        }
-        
-        mobileMenuBtn?.addEventListener('click', toggleSidebar);
-        overlay?.addEventListener('click', toggleSidebar);
-        
-        // Tema
-        const themeToggle = document.getElementById('themeToggle');
-        const themeStatus = document.getElementById('themeStatus');
-        
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            themeStatus.textContent = theme === 'dark' ? '☀️' : '🌙';
-        }
-        
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(savedTheme);
-        
-        themeToggle?.addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-theme');
-            setTheme(current === 'dark' ? 'light' : 'dark');
-        });
+        document.getElementById('btnCancelarCierre').addEventListener('click',()=>cierreModal.style.display='none');
+
+        cargarProductos();
+        cargarClientesSelect();
+
+        // Sidebar, tema, colores
+        const sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebarOverlay'), mobileBtn=document.getElementById('mobileMenuBtn');
+        mobileBtn?.addEventListener('click',()=>{ sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay?.addEventListener('click',()=>{ sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+        const themeToggle=document.getElementById('themeToggle'), savedTheme=localStorage.getItem('theme')||'light';
+        document.documentElement.setAttribute('data-theme',savedTheme);
+        themeToggle.querySelector('#themeStatus').textContent=savedTheme==='dark'?'☀️':'🌙';
+        themeToggle.addEventListener('click',()=>{ const curr=document.documentElement.getAttribute('data-theme'); const nue=curr==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nue); localStorage.setItem('theme',nue); themeToggle.querySelector('#themeStatus').textContent=nue==='dark'?'☀️':'🌙'; });
+        const colorDots=document.querySelectorAll('.color-dot'), savedColor=localStorage.getItem('colorTheme')||'default';
+        document.documentElement.setAttribute('data-color',savedColor);
+        colorDots.forEach(dot=>{ dot.classList.toggle('active',dot.dataset.color===savedColor); dot.addEventListener('click',()=>{ const col=dot.dataset.color; document.documentElement.setAttribute('data-color',col); localStorage.setItem('colorTheme',col); colorDots.forEach(d=>d.classList.remove('active')); dot.classList.add('active'); }); });
     </script>
 </body>
 </html>
