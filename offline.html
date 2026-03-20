@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Sin conexión - POS Terminal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .offline-container {
+            text-align: center;
+            padding: 40px;
+            max-width: 400px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.2);
+            margin: 20px;
+        }
+        
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: float 2s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+            font-family: monospace;
+        }
+        
+        p {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+        
+        .btn-retry {
+            margin-top: 24px;
+            padding: 12px 24px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-retry:hover {
+            background: #2563eb;
+            transform: scale(1.02);
+        }
+        
+        .info {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">
+            📡
+        </div>
+        <h1>Sin conexión a internet</h1>
+        <p>No hay conexión a internet en este momento.</p>
+        <p>Los datos que ya has guardado siguen disponibles cuando abras la app.</p>
+        <p>✅ Puedes seguir usando la app normalmente</p>
+        <p>✅ Las ventas se guardan localmente</p>
+        <p>✅ Los datos se sincronizarán cuando vuelvas a tener internet</p>
+        
+        <button class="btn-retry" onclick="location.reload()">
+            <span class="loader"></span> Reintentar
+        </button>
+        
+        <div class="info">
+            <i class="fas fa-info-circle"></i> Si instalaste la app, puedes abrirla normalmente desde la pantalla de inicio
+        </div>
+    </div>
+    
+    <script>
+        // Intentar reconectar automáticamente cada 30 segundos
+        let retryCount = 0;
+        const maxRetries = 5;
+        
+        function checkConnection() {
+            if (navigator.onLine) {
+                location.reload();
+            } else if (retryCount < maxRetries) {
+                retryCount++;
+                setTimeout(checkConnection, 30000);
+            }
+        }
+        
+        setTimeout(checkConnection, 30000);
+        
+        // Escuchar cuando vuelva la conexión
+        window.addEventListener('online', () => {
+            location.reload();
+        });
+    </script>
+</body>
+</html>
