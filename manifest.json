@@ -1,21 +1,94 @@
 {
-    "name": "POS Inventario",
-    "short_name": "POS Inv",
-    "description": "Punto de venta y gestión de inventario",
+    "name": "POS Terminal - Punto de Venta",
+    "short_name": "POS Terminal",
+    "description": "Punto de venta y gestión de inventario offline con control de stock, clientes y reportes financieros",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#2563eb",
     "theme_color": "#2563eb",
+    "orientation": "portrait",
+    "scope": "/",
+    "lang": "es",
+    "categories": ["business", "finance", "productivity"],
     "icons": [
+        {
+            "src": "https://via.placeholder.com/72x72?text=POS",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://via.placeholder.com/96x96?text=POS",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://via.placeholder.com/128x128?text=POS",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://via.placeholder.com/144x144?text=POS",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://via.placeholder.com/152x152?text=POS",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
         {
             "src": "https://via.placeholder.com/192x192?text=POS",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "https://via.placeholder.com/384x384?text=POS",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any maskable"
         },
         {
             "src": "https://via.placeholder.com/512x512?text=POS",
             "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "https://via.placeholder.com/1080x1920?text=POS+Terminal",
+            "sizes": "1080x1920",
             "type": "image/png"
+        }
+    ],
+    "prefer_related_applications": false,
+    "shortcuts": [
+        {
+            "name": "Nueva Venta",
+            "short_name": "Vender",
+            "description": "Iniciar una nueva venta",
+            "url": "/ventas.html",
+            "icons": [{ "src": "https://via.placeholder.com/96x96?text=POS", "sizes": "96x96" }]
+        },
+        {
+            "name": "Inventario",
+            "short_name": "Stock",
+            "description": "Gestionar inventario",
+            "url": "/inventario.html",
+            "icons": [{ "src": "https://via.placeholder.com/96x96?text=POS", "sizes": "96x96" }]
+        },
+        {
+            "name": "Reportes",
+            "short_name": "Reportes",
+            "description": "Ver reportes de ventas",
+            "url": "/reportes.html",
+            "icons": [{ "src": "https://via.placeholder.com/96x96?text=POS", "sizes": "96x96" }]
         }
     ]
 }
