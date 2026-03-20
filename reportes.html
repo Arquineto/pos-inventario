@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Reportes - POS Terminal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar - Panel lateral -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>POS_TERMINAL<span class="terminal-cursor"></span></h1>
+                <small>Reportes y Estadísticas</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="ventas.html" class="nav-item">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Punto de Venta</span>
+                </a>
+                <a href="inventario.html" class="nav-item">
+                    <i class="fas fa-boxes"></i>
+                    <span>Inventario</span>
+                </a>
+                <a href="clientes.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Clientes</span>
+                </a>
+                <a href="reportes.html" class="nav-item active">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reportes</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="theme-controls">
+                    <div class="theme-toggle" id="themeToggle">
+                        <span><i class="fas fa-moon"></i> Modo oscuro</span>
+                        <span id="themeStatus">🌙</span>
+                    </div>
+                    <div class="color-select">
+                        <span><i class="fas fa-palette"></i> Tema</span>
+                    </div>
+                    <div class="color-options">
+                        <div class="color-dot" data-color="default" style="background: #2563eb;"></div>
+                        <div class="color-dot" data-color="emerald" style="background: #10b981;"></div>
+                        <div class="color-dot" data-color="violet" style="background: #8b5cf6;"></div>
+                        <div class="color-dot" data-color="rose" style="background: #f43f5e;"></div>
+                        <div class="color-dot" data-color="amber" style="background: #f59e0b;"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Overlay para móvil -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header móvil -->
+            <div class="mobile-header">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2><i class="fas fa-chart-line"></i> Reportes</h2>
+                <div></div>
+            </div>
+
+            <!-- Tabs de reportes -->
+            <div class="report-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="tab-btn active" data-tab="ventas">
+                    <i class="fas fa-chart-simple"></i> Ventas
+                </button>
+                <button class="tab-btn" data-tab="productos">
+                    <i class="fas fa-trophy"></i> Top Productos
+                </button>
+                <button class="tab-btn" data-tab="clientes">
+                    <i class="fas fa-users"></i> Clientes
+                </button>
+                <button class="tab-btn" data-tab="inventario">
+                    <i class="fas fa-box"></i> Inventario
+                </button>
+            </div>
+
+            <!-- TAB 1: VENTAS -->
+            <div id="tabVentas" class="tab-content active">
+                <div class="terminal-card">
+                    <h2><i class="fas fa-calendar"></i> Período</h2>
+                    <div class="filter-bar" style="display: flex; gap: 8px; margin-bottom: 20px;">
+                        <button id="btnHoy" class="filter-btn active">
+                            <i class="fas fa-sun"></i> Hoy
+                        </button>
+                        <button id="btnSemana" class="filter-btn">
+                            <i class="fas fa-calendar-week"></i> Esta semana
+                        </button>
+                        <button id="btnMes" class="filter-btn">
+                            <i class="fas fa-calendar-alt"></i> Este mes
+                        </button>
+                    </div>
+                    
+                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+                        <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 12px; text-align: center;">
+                            <i class="fas fa-dollar-sign" style="font-size: 1.5rem; color: var(--success);"></i>
+                            <h3>Total ventas</h3>
+                            <p style="font-size: 1.5rem; font-weight: bold;" id="totalVentasPeriodo">$0</p>
+                        </div>
+                        <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 12px; text-align: center;">
+                            <i class="fas fa-receipt" style="font-size: 1.5rem; color: var(--primary);"></i>
+                            <h3>Número de ventas</h3>
+                            <p style="font-size: 1.5rem; font-weight: bold;" id="numVentasPeriodo">0</p>
+                        </div>
+                    </div>
+                    
+                    <h3><i class="fas fa-list"></i> Detalle de ventas</h3>
+                    <div id="listaVentas" style="max-height: 400px; overflow-y: auto;">
+                        <!-- Ventas cargadas dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PRODUCTOS MÁS VENDIDOS -->
+            <div id="tabProductos" class="tab-content hidden">
+                <div class="terminal-card">
+                    <h2><i class="fas fa-trophy"></i> Ranking de productos</h2>
+                    <div id="topProductos" class="top-list">
+                        <!-- Top productos cargados -->
+                    </div>
+                </div>
+                
+                <div class="terminal-card">
+                    <h2><i class="fas fa-chart-pie"></i> Resumen por método de pago</h2>
+                    <div id="resumenMetodosPago" class="metodos-list">
+                        <!-- Métodos de pago -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: CLIENTES Y DEUDAS -->
+            <div id="tabClientes" class="tab-content hidden">
+                <div class="terminal-card">
+                    <h2><i class="fas fa-exclamation-triangle"></i> Clientes con deudas pendientes</h2>
+                    <div id="clientesDeudores" class="clientes-deudores">
+                        <!-- Clientes deudores -->
+                    </div>
+                </div>
+                
+                <div class="terminal-card">
+                    <h2><i class="fas fa-chart-line"></i> Evolución de deudas</h2>
+                    <div id="evolucionDeudas">
+                        <p><i class="fas fa-info-circle"></i> Total de deudas acumuladas: <strong id="totalDeudasGlobal">$0</strong></p>
+                        <p><i class="fas fa-users"></i> Clientes con deuda: <strong id="totalClientesDeudores">0</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: ESTADO DE INVENTARIO -->
+            <div id="tabInventario" class="tab-content hidden">
+                <div class="terminal-card">
+                    <h2><i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> Alertas de stock bajo</h2>
+                    <div id="stockBajoLista" class="stock-bajo-list">
+                        <!-- Productos con stock bajo -->
+                    </div>
+                </div>
+                
+                <div class="terminal-card">
+                    <h2><i class="fas fa-chart-simple"></i> Resumen de inventario</h2>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                        <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 12px; text-align: center;">
+                            <i class="fas fa-boxes"></i>
+                            <h3>Total productos</h3>
+                            <p style="font-size: 1.5rem; font-weight: bold;" id="totalProductos">0</p>
+                        </div>
+                        <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 12px; text-align: center;">
+                            <i class="fas fa-dollar-sign"></i>
+                            <h3>Valor inventario</h3>
+                            <p style="font-size: 1.5rem; font-weight: bold;" id="valorInventario">$0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="terminal-card">
+                    <h2><i class="fas fa-chart-line"></i> Productos con mayor rotación</h2>
+                    <div id="productosMayorRotacion">
+                        <!-- Productos más vendidos -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let periodoActual = 'hoy';
+        
+        // ==================== FUNCIÓN PARA OBTENER NOMBRE DEL MÉTODO ====================
+        function getMetodoIcono(metodo) {
+            const iconos = {
+                'efectivo': '💵',
+                'transferencia': '📱',
+                'tarjeta': '💳',
+                'credito': '📝'
+            };
+            return iconos[metodo] || '💰';
+        }
+        
+        function getMetodoNombre(metodo) {
+            const nombres = {
+                'efectivo': 'Efectivo',
+                'transferencia': 'Transferencia/QR',
+                'tarjeta': 'Tarjeta',
+                'credito': 'Crédito'
+            };
+            return nombres[metodo] || metodo;
+        }
+        
+        // ==================== REPORTE DE VENTAS ====================
+        function cargarReporteVentas() {
+            const ventas = JSON.parse(localStorage.getItem('ventas') || '[]');
+            const ahora = new Date();
+            let fechaLimite = new Date();
+            
+            if (periodoActual === 'hoy') {
+                fechaLimite.setHours(0, 0, 0, 0);
+            } else if (periodoActual === 'semana') {
+                fechaLimite.setDate(ahora.getDate() - 7);
+            } else if (periodoActual === 'mes') {
+                fechaLimite.setMonth(ahora.getMonth() - 1);
+            }
+            
+            const ventasFiltradas = ventas.filter(v => new Date(v.fecha) >= fechaLimite);
+            const totalVentas = ventasFiltradas.reduce((sum, v) => sum + v.total, 0);
+            
+            document.getElementById('totalVentasPeriodo').textContent = `$${totalVentas.toFixed(2)}`;
+            document.getElementById('numVentasPeriodo').textContent = ventasFiltradas.length;
+            
+            const lista = document.getElementById('listaVentas');
+            if (ventasFiltradas.length === 0) {
+                lista.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i> No hay ventas en este período</div>';
+                return;
+            }
+            
+            lista.innerHTML = ventasFiltradas.sort((a,b) => new Date(b.fecha) - new Date(a.fecha)).map(v => `
+                <div class="cart-item-terminal" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
+                    <div>
+                        <strong><i class="fas fa-calendar"></i> ${new Date(v.fecha).toLocaleString()}</strong>
+                        <br>
+                        <small>${getMetodoIcono(v.metodo)} ${getMetodoNombre(v.metodo)}</small>
+                        <br>
+                        <small><i class="fas fa-box"></i> ${v.items.map(item => `${item.nombre} x${item.cantidad}`).join(', ')}</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 1.2rem; font-weight: bold; color: var(--success);">$${v.total.toFixed(2)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // ==================== TOP PRODUCTOS MÁS VENDIDOS ====================
+        function cargarTopProductos() {
+            const ventas = JSON.parse(localStorage.getItem('ventas') || '[]');
+            const productosVendidos = {};
+            let totalVentasGlobal = 0;
+            
+            ventas.forEach(venta => {
+                totalVentasGlobal += venta.total;
+                venta.items.forEach(item => {
+                    if (!productosVendidos[item.nombre]) {
+                        productosVendidos[item.nombre] = { cantidad: 0, total: 0 };
+                    }
+                    productosVendidos[item.nombre].cantidad += item.cantidad;
+                    productosVendidos[item.nombre].total += item.precio * item.cantidad;
+                });
+            });
+            
+            const top = Object.entries(productosVendidos)
+                .sort((a,b) => b[1].cantidad - a[1].cantidad)
+                .slice(0, 10);
+            
+            const container = document.getElementById('topProductos');
+            if (top.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i> Aún no hay ventas registradas</div>';
+            } else {
+                container.innerHTML = top.map(([nombre, data], index) => `
+                    <div class="cart-item-terminal" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">#${index + 1}</span>
+                            <strong>${nombre}</strong>
+                            <br>
+                            <small><i class="fas fa-chart-simple"></i> ${data.cantidad} unidades vendidas</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: var(--success);">$${data.total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Resumen por método de pago
+            const metodosPago = {};
+            ventas.forEach(venta => {
+                const metodo = venta.metodo;
+                if (!metodosPago[metodo]) {
+                    metodosPago[metodo] = { cantidad: 0, total: 0 };
+                }
+                metodosPago[metodo].cantidad++;
+                metodosPago[metodo].total += venta.total;
+            });
+            
+            const metodosContainer = document.getElementById('resumenMetodosPago');
+            if (Object.keys(metodosPago).length === 0) {
+                metodosContainer.innerHTML = '<div class="empty-state">No hay datos</div>';
+            } else {
+                metodosContainer.innerHTML = Object.entries(metodosPago).map(([metodo, data]) => `
+                    <div class="cart-item-terminal" style="display: flex; justify-content: space-between;">
+                        <div>
+                            <strong>${getMetodoIcono(metodo)} ${getMetodoNombre(metodo)}</strong>
+                            <br>
+                            <small>${data.cantidad} ventas</small>
+                        </div>
+                        <div style="color: var(--success); font-weight: bold;">$${data.total.toFixed(2)}</div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // ==================== CLIENTES DEUDORES ====================
+        function cargarClientesDeudores() {
+            const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
+            const deudores = clientes.filter(c => (c.deuda || 0) > 0).sort((a,b) => (b.deuda || 0) - (a.deuda || 0));
+            
+            const totalDeudas = deudores.reduce((sum, c) => sum + (c.deuda || 0), 0);
+            document.getElementById('totalDeudasGlobal').textContent = `$${totalDeudas.toFixed(2)}`;
+            document.getElementById('totalClientesDeudores').textContent = deudores.length;
+            
+            const container = document.getElementById('clientesDeudores');
+            if (deudores.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i> No hay clientes con deudas pendientes</div>';
+            } else {
+                container.innerHTML = deudores.map(c => `
+                    <div class="cart-item-terminal" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong><i class="fas fa-user"></i> ${c.nombre}</strong>
+                            ${c.telefono ? `<br><small><i class="fas fa-phone"></i> ${c.telefono}</small>` : ''}
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: var(--danger); font-weight: bold; font-size: 1.1rem;">$${(c.deuda || 0).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // ==================== ESTADO DE INVENTARIO ====================
+        function cargarEstadoInventario() {
+            const productos = JSON.parse(localStorage.getItem('productos') || '[]');
+            const stockBajo = productos.filter(p => p.stock <= (p.stockMinimo || 5));
+            
+            const container = document.getElementById('stockBajoLista');
+            if (stockBajo.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i> Todos los productos tienen stock suficiente</div>';
+            } else {
+                container.innerHTML = stockBajo.map(p => `
+                    <div class="cart-item-terminal" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong><i class="fas fa-box"></i> ${p.nombre}</strong>
+                            <br>
+                            <small>Código: ${p.codigo}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: var(--danger); font-weight: bold;">Stock: ${p.stock}</span>
+                            <br>
+                            <small>Mínimo: ${p.stockMinimo || 5}</small>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('totalProductos').textContent = productos.length;
+            const valorTotal = productos.reduce((sum, p) => sum + (p.precio * p.stock), 0);
+            document.getElementById('valorInventario').textContent = `$${valorTotal.toFixed(2)}`;
+            
+            // Productos con mayor rotación (más vendidos)
+            const ventas = JSON.parse(localStorage.getItem('ventas') || '[]');
+            const productosVendidos = {};
+            ventas.forEach(venta => {
+                venta.items.forEach(item => {
+                    if (!productosVendidos[item.nombre]) {
+                        productosVendidos[item.nombre] = 0;
+                    }
+                    productosVendidos[item.nombre] += item.cantidad;
+                });
+            });
+            
+            const topRotacion = Object.entries(productosVendidos)
+                .sort((a,b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            const rotacionContainer = document.getElementById('productosMayorRotacion');
+            if (topRotacion.length === 0) {
+                rotacionContainer.innerHTML = '<div class="empty-state">Aún no hay ventas registradas</div>';
+            } else {
+                rotacionContainer.innerHTML = topRotacion.map(([nombre, cantidad]) => `
+                    <div class="cart-item-terminal" style="display: flex; justify-content: space-between;">
+                        <span><i class="fas fa-fire"></i> ${nombre}</span>
+                        <span style="color: var(--primary); font-weight: bold;">${cantidad} unidades</span>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // ==================== EVENTOS DE TABS ====================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+                
+                btn.classList.add('active');
+                const tab = btn.dataset.tab;
+                document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
+                
+                if (tab === 'ventas') cargarReporteVentas();
+                if (tab === 'productos') cargarTopProductos();
+                if (tab === 'clientes') cargarClientesDeudores();
+                if (tab === 'inventario') cargarEstadoInventario();
+            });
+        });
+        
+        // ==================== FILTROS DE PERÍODO ====================
+        document.getElementById('btnHoy').addEventListener('click', () => {
+            periodoActual = 'hoy';
+            actualizarFiltros('btnHoy');
+            cargarReporteVentas();
+        });
+        
+        document.getElementById('btnSemana').addEventListener('click', () => {
+            periodoActual = 'semana';
+            actualizarFiltros('btnSemana');
+            cargarReporteVentas();
+        });
+        
+        document.getElementById('btnMes').addEventListener('click', () => {
+            periodoActual = 'mes';
+            actualizarFiltros('btnMes');
+            cargarReporteVentas();
+        });
+        
+        function actualizarFiltros(activoId) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(activoId).classList.add('active');
+        }
+        
+        // ==================== SIDEBAR MÓVIL ====================
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+        
+        mobileMenuBtn?.addEventListener('click', toggleSidebar);
+        overlay?.addEventListener('click', toggleSidebar);
+        
+        // ==================== TEMA OSCURO/CLARO ====================
+        const themeToggle = document.getElementById('themeToggle');
+        const themeStatus = document.getElementById('themeStatus');
+        
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeStatus.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+        
+        themeToggle?.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            setTheme(current === 'dark' ? 'light' : 'dark');
+        });
+        
+        // ==================== COLORES ALTERNATIVOS ====================
+        const colorDots = document.querySelectorAll('.color-dot');
+        
+        function setColor(color) {
+            document.documentElement.setAttribute('data-color', color);
+            localStorage.setItem('colorTheme', color);
+            colorDots.forEach(dot => {
+                dot.classList.toggle('active', dot.dataset.color === color);
+            });
+        }
+        
+        const savedColor = localStorage.getItem('colorTheme') || 'default';
+        setColor(savedColor);
+        
+        colorDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                setColor(dot.dataset.color);
+            });
+        });
+        
+        // ==================== INICIALIZAR ====================
+        cargarReporteVentas();
+    </script>
+</body>
+</html>
