@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPV del Día - POS Terminal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h1>POS_TERMINAL<span class="terminal-cursor"></span></h1><small>IPV del Día</small></div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a href="ventas.html" class="nav-item"><i class="fas fa-cash-register"></i><span>Punto de Venta</span></a>
+                <a href="inventario.html" class="nav-item"><i class="fas fa-boxes"></i><span>Inventario</span></a>
+                <a href="clientes.html" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
+                <a href="reportes.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Reportes</span></a>
+                <a href="ventas-dia.html" class="nav-item active"><i class="fas fa-chart-simple"></i><span>IPV del Día</span></a>
+                <a href="cierre-caja.html" class="nav-item"><i class="fas fa-calculator"></i><span>Cierre de Caja</span></a>
+                <a href="reporte-iva.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i><span>Reporte IVA</span></a>
+                <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="theme-toggle" id="themeToggle"><span><i class="fas fa-moon"></i> Modo oscuro</span><span id="themeStatus">🌙</span></div>
+                <div class="color-options"><div class="color-dot" data-color="default" style="background:#2563eb"></div><div class="color-dot" data-color="emerald" style="background:#10b981"></div><div class="color-dot" data-color="violet" style="background:#8b5cf6"></div><div class="color-dot" data-color="rose" style="background:#f43f5e"></div><div class="color-dot" data-color="amber" style="background:#f59e0b"></div></div>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <main class="main-content">
+            <div class="mobile-header"><button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button><h2><i class="fas fa-chart-simple"></i> IPV del Día</h2><div></div></div>
+
+            <div class="terminal-card">
+                <h2><i class="fas fa-calendar"></i> Seleccionar fecha</h2>
+                <input type="date" id="fechaIPV" class="terminal-input" style="width:auto;">
+                <button id="btnCargarIPV" class="btn-terminal">Cargar</button>
+                <button id="btnHoyIPV" class="btn-terminal">Hoy</button>
+                <button id="btnExportarIPV" class="btn-terminal btn-terminal-primary"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+            </div>
+
+            <div class="terminal-card">
+                <h2><i class="fas fa-chart-line"></i> Resumen del día</h2>
+                <div id="resumenIPV" class="stats-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px;"></div>
+            </div>
+
+            <div class="terminal-card">
+                <h2><i class="fas fa-table"></i> Detalle de productos vendidos</h2>
+                <div style="overflow-x:auto;">
+                    <table class="data-table" style="width:100%;">
+                        <thead><tr><th>Código</th><th>Nombre</th><th>Precio</th><th>Costo</th><th>Stock Inicial</th><th>Vendido</th><th>Salida</th><th>Stock Final</th><th>Ganancia</th><th>Margen</th></tr></thead>
+                        <tbody id="tablaIPV"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="terminal-card">
+                <h2><i class="fas fa-receipt"></i> Facturas del día</h2>
+                <div id="facturasDia" style="max-height:400px; overflow-y:auto;"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="storage-manager.js"></script>
+    <script>
+        let productos = [];
+        let ventas = [];
+
+        async function cargarIPV(fecha) {
+            productos = await storage.getData('productos');
+            ventas = await storage.getData('ventas');
+            const ventasDia = ventas.filter(v => v.fecha.split('T')[0] === fecha);
+            const productosVendidos = {};
+            ventasDia.forEach(v => {
+                v.items.forEach(item => {
+                    if(!productosVendidos[item.id]) productosVendidos[item.id] = { ...item, cantidad:0 };
+                    productosVendidos[item.id].cantidad += item.cantidad;
+                });
+            });
+            const totalVentas = ventasDia.reduce((s,v)=>s+v.total,0);
+            const totalGanancia = ventasDia.reduce((s,v)=>s+(v.ganancia||0),0);
+            document.getElementById('resumenIPV').innerHTML = `
+                <div class="stat-box"><i class="fas fa-dollar-sign"></i><h4>Total Ventas</h4><p>$${totalVentas.toFixed(2)}</p></div>
+                <div class="stat-box"><i class="fas fa-chart-line"></i><h4>Ganancia Total</h4><p>$${totalGanancia.toFixed(2)}</p></div>
+                <div class="stat-box"><i class="fas fa-receipt"></i><h4>N° Facturas</h4><p>${ventasDia.length}</p></div>
+                <div class="stat-box"><i class="fas fa-box"></i><h4>Productos Vendidos</h4><p>${Object.keys(productosVendidos).length}</p></div>
+            `;
+            const tbody = document.getElementById('tablaIPV');
+            if(Object.keys(productosVendidos).length === 0){
+                tbody.innerHTML='<tr><td colspan="10" class="empty-state">No hay ventas este día</td></tr>';
+            } else {
+                tbody.innerHTML = Object.values(productosVendidos).map(item => {
+                    const prod = productos.find(p=>p.id===item.id);
+                    const stockInicial = prod ? prod.stock + item.cantidad : 0;
+                    const costo = item.costo || 0;
+                    const ganancia = (item.precio - costo) * item.cantidad;
+                    const margen = item.precio > 0 ? ((item.precio - costo) / item.precio * 100).toFixed(1) : 0;
+                    return `<tr><td>${prod?.codigo || '-'}</td><td>${item.nombre}</td><td>$${item.precio.toFixed(2)}</td><td>$${costo.toFixed(2)}</td><td>${stockInicial}</td><td>${item.cantidad}</td><td>${item.cantidad}</td><td>${prod?.stock || 0}</td><td>$${ganancia.toFixed(2)}</td><td>${margen}%</td></tr>`;
+                }).join('');
+            }
+            const facturasDiv = document.getElementById('facturasDia');
+            if(ventasDia.length===0){
+                facturasDiv.innerHTML='<div class="empty-state">No hay facturas</div>';
+            } else {
+                facturasDiv.innerHTML = ventasDia.map(v => `<details><summary><strong>Factura #${v.factura}</strong> - ${new Date(v.fecha).toLocaleString()} - Total: $${v.total.toFixed(2)}</summary><div style="padding:12px;">${v.items.map(i=>`${i.nombre} x${i.cantidad} = $${(i.precio*i.cantidad).toFixed(2)}`).join('<br>')}</div></details>`).join('');
+            }
+        }
+
+        document.getElementById('btnCargarIPV').addEventListener('click',()=>{
+            const fecha = document.getElementById('fechaIPV').value;
+            if(fecha) cargarIPV(fecha);
+        });
+        document.getElementById('btnHoyIPV').addEventListener('click',()=>{
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('fechaIPV').value = hoy;
+            cargarIPV(hoy);
+        });
+        document.getElementById('btnExportarIPV').addEventListener('click',async()=>{
+            const fecha = document.getElementById('fechaIPV').value || new Date().toISOString().split('T')[0];
+            const ventasDia = ventas.filter(v=>v.fecha.split('T')[0]===fecha);
+            let csv = "Factura,Fecha,Productos,Cantidad,Total\n";
+            ventasDia.forEach(v=>{
+                v.items.forEach(item=>{
+                    csv += `${v.factura},${new Date(v.fecha).toLocaleString()},${item.nombre},${item.cantidad},$${(item.precio*item.cantidad).toFixed(2)}\n`;
+                });
+            });
+            const blob = new Blob([csv],{type:'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ipv_${fecha}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        cargarIPV(new Date().toISOString().split('T')[0]);
+
+        // Sidebar, tema, colores
+        const sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebarOverlay'), mobileBtn=document.getElementById('mobileMenuBtn');
+        mobileBtn?.addEventListener('click',()=>{ sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay?.addEventListener('click',()=>{ sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+        const themeToggle=document.getElementById('themeToggle'), savedTheme=localStorage.getItem('theme')||'light';
+        document.documentElement.setAttribute('data-theme',savedTheme);
+        themeToggle.querySelector('#themeStatus').textContent=savedTheme==='dark'?'☀️':'🌙';
+        themeToggle.addEventListener('click',()=>{ const curr=document.documentElement.getAttribute('data-theme'); const nue=curr==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nue); localStorage.setItem('theme',nue); themeToggle.querySelector('#themeStatus').textContent=nue==='dark'?'☀️':'🌙'; });
+        const colorDots=document.querySelectorAll('.color-dot'), savedColor=localStorage.getItem('colorTheme')||'default';
+        document.documentElement.setAttribute('data-color',savedColor);
+        colorDots.forEach(dot=>{ dot.classList.toggle('active',dot.dataset.color===savedColor); dot.addEventListener('click',()=>{ const col=dot.dataset.color; document.documentElement.setAttribute('data-color',col); localStorage.setItem('colorTheme',col); colorDots.forEach(d=>d.classList.remove('active')); dot.classList.add('active'); }); });
+    </script>
+    <style>
+        details { margin-bottom: 8px; padding: 8px; background: var(--bg-tertiary); border-radius: 8px; }
+        details summary { cursor: pointer; font-weight: bold; }
+    </style>
+</body>
+</html>
