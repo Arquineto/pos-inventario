@@ -2,20 +2,160 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Configuración - POS Terminal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#2563eb">
-<link rel="manifest" href="manifest.json">
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .danger-zone {
+            border: 2px solid var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .storage-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .storage-option.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .storage-option i {
+            font-size: 2rem;
+        }
+        .storage-options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .info-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+        .progress-bar {
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-fill {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .form-field-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            display: block;
+        }
+        .btn-terminal-danger {
+            background: var(--danger);
+            color: white;
+            border: none;
+        }
+        .btn-terminal-danger:hover {
+            background: var(--danger-dark);
+        }
+        .categoria-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .categoria-item:last-child {
+            border-bottom: none;
+        }
+        .modal-confirmacion {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-confirmacion-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+            padding: 24px;
+            text-align: center;
+        }
+        .modal-confirmacion-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <div class="app-layout">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header"><h1>POS_TERMINAL<span class="terminal-cursor"></span></h1><small>Configuración</small></div>
+            <div class="sidebar-header">
+                <h1>POS_TERMINAL<span class="terminal-cursor"></span></h1>
+                <small>Configuración</small>
+            </div>
             <nav class="sidebar-nav">
                 <a href="index.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
                 <a href="ventas.html" class="nav-item"><i class="fas fa-cash-register"></i><span>Punto de Venta</span></a>
@@ -28,138 +168,569 @@
                 <a href="configuracion.html" class="nav-item active"><i class="fas fa-cog"></i><span>Configuración</span></a>
             </nav>
             <div class="sidebar-footer">
-                <div class="theme-toggle" id="themeToggle"><span><i class="fas fa-moon"></i> Modo oscuro</span><span id="themeStatus">🌙</span></div>
-                <div class="color-options"><div class="color-dot" data-color="default" style="background:#2563eb"></div><div class="color-dot" data-color="emerald" style="background:#10b981"></div><div class="color-dot" data-color="violet" style="background:#8b5cf6"></div><div class="color-dot" data-color="rose" style="background:#f43f5e"></div><div class="color-dot" data-color="amber" style="background:#f59e0b"></div></div>
+                <div class="theme-toggle" id="themeToggle">
+                    <span><i class="fas fa-moon"></i> Modo oscuro</span>
+                    <span id="themeStatus">🌙</span>
+                </div>
+                <div class="color-options">
+                    <div class="color-dot" data-color="default" style="background: #2563eb;"></div>
+                    <div class="color-dot" data-color="emerald" style="background: #10b981;"></div>
+                    <div class="color-dot" data-color="violet" style="background: #8b5cf6;"></div>
+                    <div class="color-dot" data-color="rose" style="background: #f43f5e;"></div>
+                    <div class="color-dot" data-color="amber" style="background: #f59e0b;"></div>
+                </div>
             </div>
         </aside>
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <main class="main-content">
-            <div class="mobile-header"><button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button><h2><i class="fas fa-cog"></i> Configuración</h2><div></div></div>
-
-            <div class="terminal-card"><h3><i class="fas fa-store"></i> Perfil de la tienda</h3>
-                <input type="text" id="businessName" class="terminal-input" placeholder="Nombre del negocio" style="margin-bottom:12px;">
-                <input type="text" id="businessAddress" class="terminal-input" placeholder="Dirección" style="margin-bottom:12px;">
-                <input type="text" id="businessPhone" class="terminal-input" placeholder="Teléfono" style="margin-bottom:12px;">
-                <input type="number" id="defaultStockMinimo" class="terminal-input" placeholder="Stock mínimo default" value="5">
-                <button id="btnGuardarPerfil" class="btn-terminal btn-terminal-primary" style="margin-top:12px;">Guardar</button>
+            <div class="mobile-header">
+                <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+                <h2><i class="fas fa-cog"></i> Configuración</h2>
+                <div></div>
             </div>
 
-            <div class="terminal-card"><h3><i class="fas fa-tags"></i> Categorías</h3>
-                <div style="display:flex; gap:8px; margin-bottom:12px;"><input type="text" id="nuevaCategoria" class="terminal-input" placeholder="Nueva categoría"><button id="btnAgregarCategoria" class="btn-terminal">Agregar</button></div>
-                <div id="listaCategorias"></div>
-            </div>
-
-            <div class="terminal-card"><h3><i class="fas fa-database"></i> Respaldos</h3>
-                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;">
-                    <button id="btnExportarCompleto" class="btn-terminal"><i class="fas fa-download"></i> Exportar</button>
-                    <input type="file" id="importFile" accept=".json"><button id="btnImportarCompleto" class="btn-terminal"><i class="fas fa-upload"></i> Importar</button>
-                    <label class="switch"><input type="checkbox" id="autoBackupToggle"><span class="slider"></span><span>Auto backup diario</span></label>
+            <!-- SECCIÓN 1: PERFIL DE LA TIENDA -->
+            <div class="terminal-card">
+                <h3><i class="fas fa-store"></i> Perfil de la tienda</h3>
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <label class="form-field-label"><i class="fas fa-tag"></i> Nombre del negocio</label>
+                    <input type="text" id="businessName" class="terminal-input" placeholder="Mi Negocio">
                 </div>
-                <div id="storageStatus" class="info-text"></div>
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <label class="form-field-label"><i class="fas fa-map-marker-alt"></i> Dirección</label>
+                    <input type="text" id="businessAddress" class="terminal-input" placeholder="Calle, número, ciudad">
+                </div>
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <label class="form-field-label"><i class="fas fa-phone"></i> Teléfono</label>
+                    <input type="text" id="businessPhone" class="terminal-input" placeholder="+1234567890">
+                </div>
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <label class="form-field-label"><i class="fas fa-percent"></i> IVA (%)</label>
+                    <input type="number" id="ivaRate" class="terminal-input" step="0.1" value="16">
+                </div>
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <label class="form-field-label"><i class="fas fa-exclamation-triangle"></i> Stock mínimo default</label>
+                    <input type="number" id="defaultStockMinimo" class="terminal-input" value="5">
+                </div>
+                <button id="btnGuardarPerfil" class="btn-terminal btn-terminal-primary" style="margin-top: 12px;">
+                    <i class="fas fa-save"></i> Guardar configuración
+                </button>
             </div>
 
-            <div class="terminal-card danger-zone"><h3><i class="fas fa-exclamation-triangle"></i> Zona de peligro</h3>
-                <button id="btnResetContadores" class="btn-terminal" style="background:var(--warning);">Resetear numeración automática</button>
-                <button id="btnLimpiarTodo" class="btn-terminal btn-terminal-danger" style="background:var(--danger); margin-top:12px;">Eliminar TODOS los datos</button>
+            <!-- SECCIÓN 2: CATEGORÍAS -->
+            <div class="terminal-card">
+                <h3><i class="fas fa-tags"></i> Categorías de productos</h3>
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <input type="text" id="nuevaCategoria" class="terminal-input" placeholder="Nueva categoría">
+                    <button id="btnAgregarCategoria" class="btn-terminal"><i class="fas fa-plus"></i> Agregar</button>
+                </div>
+                <div id="listaCategorias" style="max-height: 200px; overflow-y: auto;">
+                    <!-- Categorías cargadas dinámicamente -->
+                </div>
+            </div>
+
+            <!-- SECCIÓN 3: ALMACENAMIENTO Y RESPALDOS -->
+            <div class="terminal-card">
+                <h3><i class="fas fa-database"></i> Almacenamiento y respaldos</h3>
+                
+                <div class="storage-options-grid">
+                    <div class="storage-option" data-type="localStorage">
+                        <i class="fas fa-database"></i>
+                        <strong>LocalStorage</strong>
+                        <small>Hasta 5-10MB</small>
+                    </div>
+                    <div class="storage-option" data-type="indexedDB">
+                        <i class="fas fa-server"></i>
+                        <strong>IndexedDB</strong>
+                        <small>Sin límite</small>
+                    </div>
+                    <div class="storage-option" data-type="file">
+                        <i class="fas fa-file-alt"></i>
+                        <strong>Archivo externo</strong>
+                        <small>Respaldo portátil</small>
+                    </div>
+                </div>
+                
+                <div id="storageStatus" class="info-text" style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 16px;">
+                    <i class="fas fa-info-circle"></i> Cargando estado...
+                </div>
+                
+                <div class="progress-bar" style="margin-bottom: 8px;">
+                    <div class="progress-fill" id="storageProgress" style="width: 0%;"></div>
+                </div>
+                <div id="storageUsage" class="info-text" style="margin-bottom: 16px;"></div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <button id="btnExportar" class="btn-terminal"><i class="fas fa-download"></i> Exportar datos</button>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="file" id="fileImport" accept=".json" style="display: none;">
+                        <button id="btnImportar" class="btn-terminal"><i class="fas fa-upload"></i> Importar datos</button>
+                    </div>
+                </div>
+                
+                <div class="config-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--border-color);">
+                    <span><i class="fas fa-clock"></i> Respaldo automático diario</span>
+                    <label class="switch">
+                        <input type="checkbox" id="autoBackupToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="autoBackupStatus" class="info-text"></div>
+            </div>
+
+            <!-- SECCIÓN 4: ZONA DE PELIGRO -->
+            <div class="terminal-card danger-zone">
+                <h3 style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Zona de peligro</h3>
+                <p class="info-text">⚠️ Estas acciones son irreversibles. Ten cuidado.</p>
+                
+                <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+                    <button id="btnResetContadores" class="btn-terminal" style="background: var(--warning); color: white;">
+                        <i class="fas fa-undo-alt"></i> Resetear numeración de facturas
+                    </button>
+                    <button id="btnRestaurarEjemplos" class="btn-terminal" style="background: var(--warning); color: white;">
+                        <i class="fas fa-box-open"></i> Restaurar datos de ejemplo
+                    </button>
+                    <button id="btnLimpiarTodo" class="btn-terminal btn-terminal-danger" style="background: var(--danger); color: white;">
+                        <i class="fas fa-trash-alt"></i> Eliminar TODOS los datos
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 5: ACERCA DE -->
+            <div class="terminal-card">
+                <h3><i class="fas fa-info-circle"></i> Acerca de</h3>
+                <div class="config-row" style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <span><i class="fas fa-code"></i> Versión</span>
+                    <span>POS Terminal v2.0</span>
+                </div>
+                <div class="config-row" style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <span><i class="fas fa-check-circle"></i> Modo offline</span>
+                    <span style="color: var(--success);">✅ Activo</span>
+                </div>
+                <div class="config-row" style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <span><i class="fas fa-database"></i> Almacenamiento actual</span>
+                    <span id="currentStorageType">-</span>
+                </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal de confirmación personalizado -->
+    <div id="modalConfirmacion" class="modal-confirmacion hidden">
+        <div class="modal-confirmacion-content">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 16px;"></i>
+            <h3 id="modalTitulo">Confirmar acción</h3>
+            <p id="modalMensaje">¿Estás seguro de realizar esta acción?</p>
+            <div class="modal-confirmacion-buttons">
+                <button id="modalBtnConfirmar" class="btn-terminal btn-terminal-danger">Confirmar</button>
+                <button id="modalBtnCancelar" class="btn-terminal">Cancelar</button>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
     <script src="storage-manager.js"></script>
     <script>
-        async function cargarPerfil(){
+        // ==================== VARIABLES GLOBALES ====================
+        let pendingAction = null;
+
+        // ==================== PERFIL DE LA TIENDA ====================
+        function cargarPerfil() {
             document.getElementById('businessName').value = localStorage.getItem('business_name') || '';
             document.getElementById('businessAddress').value = localStorage.getItem('business_address') || '';
             document.getElementById('businessPhone').value = localStorage.getItem('business_phone') || '';
+            document.getElementById('ivaRate').value = localStorage.getItem('iva_rate') || '16';
             document.getElementById('defaultStockMinimo').value = localStorage.getItem('default_stock_minimo') || '5';
         }
-        document.getElementById('btnGuardarPerfil').addEventListener('click',()=>{
+
+        document.getElementById('btnGuardarPerfil').addEventListener('click', () => {
             localStorage.setItem('business_name', document.getElementById('businessName').value);
             localStorage.setItem('business_address', document.getElementById('businessAddress').value);
             localStorage.setItem('business_phone', document.getElementById('businessPhone').value);
+            localStorage.setItem('iva_rate', document.getElementById('ivaRate').value);
             localStorage.setItem('default_stock_minimo', document.getElementById('defaultStockMinimo').value);
-            alert('Perfil guardado');
+            alert('✅ Configuración guardada correctamente');
         });
 
-        async function cargarCategorias(){
-            let productos = await storage.getData('productos');
-            let categorias = [...new Set(productos.map(p=>p.categoria).filter(c=>c))];
+        // ==================== CATEGORÍAS ====================
+        async function cargarCategorias() {
+            const productos = await storage.getData('productos');
+            const categorias = [...new Set(productos.map(p => p.categoria).filter(c => c && c.trim() !== ''))];
             const div = document.getElementById('listaCategorias');
-            div.innerHTML = categorias.map(c=>`<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border-color);"><span>${c}</span><button class="btn-eliminar-cat" data-cat="${c}" style="background:var(--danger); border:none; padding:4px 8px; border-radius:4px;">Eliminar</button></div>`).join('');
-            document.querySelectorAll('.btn-eliminar-cat').forEach(btn=>btn.addEventListener('click',async()=>{
-                let prods = await storage.getData('productos');
-                prods = prods.map(p=>{ if(p.categoria===btn.dataset.cat) p.categoria=''; return p; });
-                await storage.saveData('productos',prods);
-                cargarCategorias();
-            }));
+            if (categorias.length === 0) {
+                div.innerHTML = '<div class="empty-state">No hay categorías creadas</div>';
+                return;
+            }
+            div.innerHTML = categorias.map(c => `
+                <div class="categoria-item">
+                    <span><i class="fas fa-folder"></i> ${c}</span>
+                    <button class="btn-eliminar-cat" data-cat="${c}" style="background: var(--danger); color: white; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer;">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </div>
+            `).join('');
+            
+            document.querySelectorAll('.btn-eliminar-cat').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const categoria = btn.dataset.cat;
+                    if (confirm(`¿Eliminar la categoría "${categoria}"? Los productos quedarán sin categoría.`)) {
+                        let productos = await storage.getData('productos');
+                        productos = productos.map(p => {
+                            if (p.categoria === categoria) p.categoria = '';
+                            return p;
+                        });
+                        await storage.saveData('productos', productos);
+                        cargarCategorias();
+                        alert(`✅ Categoría "${categoria}" eliminada`);
+                    }
+                });
+            });
         }
-        document.getElementById('btnAgregarCategoria').addEventListener('click',()=>{
+
+        document.getElementById('btnAgregarCategoria').addEventListener('click', async () => {
             const nueva = document.getElementById('nuevaCategoria').value.trim();
-            if(nueva) alert(`Categoría "${nueva}" agregada. Puedes usarla en productos.`);
-            document.getElementById('nuevaCategoria').value='';
+            if (!nueva) { alert('Ingresa un nombre de categoría'); return; }
+            alert(`✅ Categoría "${nueva}" agregada. Puedes usarla al editar productos.`);
+            document.getElementById('nuevaCategoria').value = '';
         });
 
-        document.getElementById('btnExportarCompleto').addEventListener('click',async()=>{
-            const data = await storage.getAllData();
-            const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href=url; a.download=`backup_${new Date().toISOString().slice(0,19)}.json`; a.click(); URL.revokeObjectURL(url);
-        });
-        document.getElementById('btnImportarCompleto').addEventListener('click',()=>{
-            const file = document.getElementById('importFile').files[0];
-            if(file){
-                const reader = new FileReader();
-                reader.onload = async(e)=>{
-                    const data = JSON.parse(e.target.result);
-                    for(const [key,val] of Object.entries(data.data)) await storage.saveData(key,val);
-                    alert('Datos importados. Recarga la página.');
-                    location.reload();
-                };
-                reader.readAsText(file);
-            } else alert('Selecciona un archivo');
-        });
-        const autoBackupToggle = document.getElementById('autoBackupToggle');
-        autoBackupToggle.checked = localStorage.getItem('auto_backup')==='true';
-        autoBackupToggle.addEventListener('change',()=>{ localStorage.setItem('auto_backup', autoBackupToggle.checked); alert(autoBackupToggle.checked?'Auto backup activado':'Auto backup desactivado'); });
-        document.getElementById('storageStatus').innerHTML = `Almacenamiento actual: ${localStorage.getItem('storage_type')||'localStorage'}`;
+        // ==================== ALMACENAMIENTO ====================
+        async function actualizarEstadoAlmacenamiento() {
+            const tipoActual = localStorage.getItem('storage_type') || 'localStorage';
+            document.getElementById('currentStorageType').textContent = tipoActual === 'localStorage' ? 'LocalStorage' : 'IndexedDB';
+            
+            document.querySelectorAll('.storage-option').forEach(opt => {
+                if (opt.dataset.type === tipoActual) opt.classList.add('active');
+                else opt.classList.remove('active');
+            });
+            
+            try {
+                const stats = await storage.getStorageStats();
+                const statusDiv = document.getElementById('storageStatus');
+                statusDiv.innerHTML = `<i class="fas fa-info-circle"></i> Almacenamiento: <strong>${stats.type === 'localStorage' ? 'LocalStorage' : 'IndexedDB'}</strong> | Total registros: ${stats.totalItems} | Tamaño: ${stats.totalSize}`;
+                
+                const sizeInMB = parseFloat(stats.totalSize);
+                const maxSize = stats.type === 'localStorage' ? 10 : 100;
+                const percent = Math.min((sizeInMB / maxSize) * 100, 100);
+                document.getElementById('storageProgress').style.width = percent + '%';
+                document.getElementById('storageUsage').innerHTML = `${stats.totalSize} de ${maxSize} MB usado (${percent.toFixed(1)}%)`;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
 
-        document.getElementById('btnResetContadores').addEventListener('click',()=>{
-            localStorage.setItem('ultimo_numero_factura','0');
-            alert('Contadores reseteados');
+        async function cambiarAlmacenamiento(tipo) {
+            if (tipo === 'file') {
+                alert('📁 Para almacenamiento externo, usa Exportar/Importar manualmente');
+                return;
+            }
+            if (confirm(`⚠️ ¿Cambiar almacenamiento a ${tipo === 'localStorage' ? 'LocalStorage' : 'IndexedDB'}? Los datos se migrarán automáticamente.`)) {
+                mostrarLoading(true);
+                try {
+                    await storage.setStorageType(tipo);
+                    await actualizarEstadoAlmacenamiento();
+                    alert(`✅ Almacenamiento cambiado a ${tipo === 'localStorage' ? 'LocalStorage' : 'IndexedDB'}`);
+                } catch (error) {
+                    alert('❌ Error al cambiar almacenamiento: ' + error);
+                } finally {
+                    mostrarLoading(false);
+                }
+            }
+        }
+
+        document.querySelectorAll('.storage-option').forEach(opt => {
+            opt.addEventListener('click', () => cambiarAlmacenamiento(opt.dataset.type));
         });
-        document.getElementById('btnLimpiarTodo').addEventListener('click',async()=>{
-            if(confirm('¿Eliminar TODOS los datos? Esta acción es irreversible.')){
-                await storage.clearAllData();
-                alert('Datos eliminados. La página se recargará.');
-                location.reload();
+
+        // ==================== EXPORTAR/IMPORTAR ====================
+        async function exportarDatos() {
+            mostrarLoading(true);
+            try {
+                await storage.exportData();
+                alert('✅ Datos exportados correctamente');
+            } catch (error) {
+                alert('❌ Error al exportar: ' + error);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function importarDatos(file) {
+            if (!file) return;
+            mostrarLoading(true);
+            try {
+                await storage.importData(file);
+                alert('✅ Datos importados correctamente. La página se recargará.');
+                setTimeout(() => location.reload(), 2000);
+            } catch (error) {
+                alert('❌ Error al importar: ' + error);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        document.getElementById('btnExportar').addEventListener('click', exportarDatos);
+        document.getElementById('btnImportar').addEventListener('click', () => {
+            document.getElementById('fileImport').click();
+        });
+        document.getElementById('fileImport').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) importarDatos(e.target.files[0]);
+        });
+
+        // ==================== COPIA AUTOMÁTICA ====================
+        function configurarAutoBackup() {
+            const toggle = document.getElementById('autoBackupToggle');
+            const autoBackupEnabled = localStorage.getItem('auto_backup') === 'true';
+            toggle.checked = autoBackupEnabled;
+            
+            const statusSpan = document.getElementById('autoBackupStatus');
+            if (autoBackupEnabled) {
+                const lastBackup = localStorage.getItem('last_auto_backup');
+                if (lastBackup) {
+                    statusSpan.innerHTML = `✅ Copia automática activa. Último respaldo: ${new Date(lastBackup).toLocaleString()}`;
+                } else {
+                    statusSpan.innerHTML = `✅ Copia automática activa. Se hará un respaldo cada 24 horas.`;
+                }
+            } else {
+                statusSpan.innerHTML = `⭕ Copia automática desactivada. Actívala para respaldos diarios.`;
+            }
+            
+            toggle.addEventListener('change', async (e) => {
+                if (e.target.checked) {
+                    localStorage.setItem('auto_backup', 'true');
+                    await storage.exportData();
+                    localStorage.setItem('last_auto_backup', new Date().toISOString());
+                    statusSpan.innerHTML = `✅ Copia automática activa. Respaldo creado ahora.`;
+                    alert('✅ Copia automática activada. Se guardará un respaldo cada 24 horas.');
+                } else {
+                    localStorage.setItem('auto_backup', 'false');
+                    statusSpan.innerHTML = `⭕ Copia automática desactivada.`;
+                }
+            });
+        }
+
+        // ==================== FUNCIONES DE LIMPIEZA - CORREGIDAS ====================
+        function mostrarModal(titulo, mensaje, accion) {
+            pendingAction = accion;
+            document.getElementById('modalTitulo').textContent = titulo;
+            document.getElementById('modalMensaje').innerHTML = mensaje;
+            document.getElementById('modalConfirmacion').classList.remove('hidden');
+        }
+
+        function ocultarModal() {
+            document.getElementById('modalConfirmacion').classList.add('hidden');
+            pendingAction = null;
+        }
+
+        document.getElementById('modalBtnConfirmar').addEventListener('click', async () => {
+            if (pendingAction) {
+                await pendingAction();
+                ocultarModal();
             }
         });
+        
+        document.getElementById('modalBtnCancelar').addEventListener('click', () => {
+            ocultarModal();
+        });
 
+        async function resetearContadores() {
+            localStorage.setItem('ultimo_numero_factura', '0');
+            alert('✅ Numeración de facturas reseteadas. La próxima factura será #0001');
+        }
+
+        async function restaurarDatosEjemplo() {
+            // Datos de ejemplo
+            const productosEjemplo = [
+                { id: '1', codigo: '7501000012345', nombre: 'Café molido 500g', precio: 89.90, costo: 65.00, stock: 25, stockMinimo: 10, categoria: 'Alimentos' },
+                { id: '2', codigo: '7502000023456', nombre: 'Azúcar 1kg', precio: 35.50, costo: 28.00, stock: 40, stockMinimo: 15, categoria: 'Alimentos' },
+                { id: '3', codigo: '7503000034567', nombre: 'Leche 1L', precio: 28.90, costo: 22.00, stock: 8, stockMinimo: 10, categoria: 'Lácteos' },
+                { id: '4', codigo: '7504000045678', nombre: 'Pan molde', precio: 45.00, costo: 32.00, stock: 3, stockMinimo: 5, categoria: 'Panadería' },
+                { id: '5', codigo: '7505000056789', nombre: 'Galletas', precio: 22.50, costo: 15.00, stock: 50, stockMinimo: 20, categoria: 'Snacks' }
+            ];
+            
+            const clientesEjemplo = [
+                { id: 'c1', nombre: 'María González', telefono: '555-1234', deuda: 150.00, fechaRegistro: new Date().toISOString() },
+                { id: 'c2', nombre: 'Juan Pérez', telefono: '555-5678', deuda: 0, fechaRegistro: new Date().toISOString() }
+            ];
+            
+            await storage.saveData('productos', productosEjemplo);
+            await storage.saveData('clientes', clientesEjemplo);
+            await storage.saveData('ventas', []);
+            await storage.saveData('pagos', []);
+            await storage.saveData('caja_diaria', []);
+            await storage.saveData('cierres_caja', []);
+            await storage.saveData('gastos', []);
+            await storage.saveData('entradas_stock', []);
+            
+            localStorage.setItem('ultimo_numero_factura', '0');
+            
+            alert('✅ Datos de ejemplo restaurados. La página se recargará.');
+            setTimeout(() => location.reload(), 1500);
+        }
+
+        async function limpiarTodosLosDatos() {
+            mostrarLoading(true);
+            try {
+                // Limpiar todas las colecciones
+                const collections = ['productos', 'ventas', 'clientes', 'pagos', 'caja_diaria', 'cierres_caja', 'gastos', 'entradas_stock'];
+                for (const collection of collections) {
+                    await storage.saveData(collection, []);
+                    localStorage.removeItem(collection);
+                }
+                
+                // Resetear configuración
+                localStorage.removeItem('ultimo_numero_factura');
+                localStorage.removeItem('business_name');
+                localStorage.removeItem('business_address');
+                localStorage.removeItem('business_phone');
+                localStorage.removeItem('iva_rate');
+                localStorage.removeItem('default_stock_minimo');
+                localStorage.removeItem('auto_backup');
+                localStorage.removeItem('last_auto_backup');
+                localStorage.removeItem('storage_type');
+                localStorage.removeItem('theme');
+                localStorage.removeItem('colorTheme');
+                
+                // Restaurar datos de ejemplo básicos
+                const productosEjemplo = [
+                    { id: '1', codigo: '7501000012345', nombre: 'Café molido 500g', precio: 89.90, costo: 65.00, stock: 25, stockMinimo: 10, categoria: 'Alimentos' },
+                    { id: '2', codigo: '7502000023456', nombre: 'Azúcar 1kg', precio: 35.50, costo: 28.00, stock: 40, stockMinimo: 15, categoria: 'Alimentos' },
+                    { id: '3', codigo: '7503000034567', nombre: 'Leche 1L', precio: 28.90, costo: 22.00, stock: 8, stockMinimo: 10, categoria: 'Lácteos' }
+                ];
+                const clientesEjemplo = [
+                    { id: 'c1', nombre: 'Cliente de ejemplo', telefono: '555-0000', deuda: 0, fechaRegistro: new Date().toISOString() }
+                ];
+                
+                await storage.saveData('productos', productosEjemplo);
+                await storage.saveData('clientes', clientesEjemplo);
+                await storage.saveData('ventas', []);
+                await storage.saveData('pagos', []);
+                await storage.saveData('caja_diaria', []);
+                await storage.saveData('cierres_caja', []);
+                await storage.saveData('gastos', []);
+                await storage.saveData('entradas_stock', []);
+                
+                localStorage.setItem('ultimo_numero_factura', '0');
+                
+                alert('✅ TODOS los datos han sido eliminados. Se han restaurado datos de ejemplo básicos. La página se recargará.');
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                alert('❌ Error al limpiar datos: ' + error);
+                mostrarLoading(false);
+            }
+        }
+
+        // ==================== EVENTOS DE LA ZONA DE PELIGRO ====================
+        document.getElementById('btnResetContadores').addEventListener('click', () => {
+            mostrarModal('Resetear numeración', '¿Resetear la numeración de facturas? La próxima factura será #0001', resetearContadores);
+        });
+        
+        document.getElementById('btnRestaurarEjemplos').addEventListener('click', () => {
+            mostrarModal('Restaurar datos de ejemplo', '¿Restaurar los datos de ejemplo? <br><strong>⚠️ Esto reemplazará todos tus datos actuales.</strong>', restaurarDatosEjemplo);
+        });
+        
+        document.getElementById('btnLimpiarTodo').addEventListener('click', () => {
+            mostrarModal('ELIMINAR TODOS LOS DATOS', 
+                '<span style="color: var(--danger); font-weight: bold;">🚨 ¡ADVERTENCIA EXTREMA! 🚨</span><br><br>' +
+                'Esta acción ELIMINARÁ PERMANENTEMENTE:<br>' +
+                '• Todos los productos y stock<br>' +
+                '• Todas las ventas registradas<br>' +
+                '• Todos los clientes y deudas<br>' +
+                '• Todos los pagos y gastos<br>' +
+                '• Todo el historial de cierres<br><br>' +
+                '<strong>Esta acción NO se puede deshacer.</strong>',
+                limpiarTodosLosDatos);
+        });
+
+        // ==================== LOADING ====================
+        function mostrarLoading(mostrar) {
+            let loader = document.getElementById('global-loader');
+            if (!loader && mostrar) {
+                loader = document.createElement('div');
+                loader.id = 'global-loader';
+                loader.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0,0,0,0.7);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 9999;
+                    color: white;
+                    font-size: 1.2rem;
+                `;
+                loader.innerHTML = '<div><i class="fas fa-spinner fa-spin"></i> Procesando...</div>';
+                document.body.appendChild(loader);
+            } else if (loader && !mostrar) {
+                loader.remove();
+            }
+        }
+
+        // ==================== SIDEBAR MÓVIL ====================
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        
+        mobileMenuBtn?.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        });
+        
+        overlay?.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+        });
+
+        // ==================== TEMA OSCURO ====================
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeToggle.querySelector('#themeStatus').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        
+        themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.querySelector('#themeStatus').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
+
+        // ==================== COLORES ALTERNATIVOS ====================
+        const colorDots = document.querySelectorAll('.color-dot');
+        const savedColor = localStorage.getItem('colorTheme') || 'default';
+        document.documentElement.setAttribute('data-color', savedColor);
+        
+        colorDots.forEach(dot => {
+            dot.classList.toggle('active', dot.dataset.color === savedColor);
+            dot.addEventListener('click', () => {
+                const color = dot.dataset.color;
+                document.documentElement.setAttribute('data-color', color);
+                localStorage.setItem('colorTheme', color);
+                colorDots.forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+            });
+        });
+
+        // ==================== INICIALIZACIÓN ====================
         cargarPerfil();
         cargarCategorias();
+        actualizarEstadoAlmacenamiento();
+        configurarAutoBackup();
 
-        // Sidebar, tema, colores
-        const sidebar=document.getElementById('sidebar'), overlay=document.getElementById('sidebarOverlay'), mobileBtn=document.getElementById('mobileMenuBtn');
-        mobileBtn?.addEventListener('click',()=>{ sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
-        overlay?.addEventListener('click',()=>{ sidebar.classList.remove('open'); overlay.classList.remove('open'); });
-        const themeToggle=document.getElementById('themeToggle'), savedTheme=localStorage.getItem('theme')||'light';
-        document.documentElement.setAttribute('data-theme',savedTheme);
-        themeToggle.querySelector('#themeStatus').textContent=savedTheme==='dark'?'☀️':'🌙';
-        themeToggle.addEventListener('click',()=>{ const curr=document.documentElement.getAttribute('data-theme'); const nue=curr==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nue); localStorage.setItem('theme',nue); themeToggle.querySelector('#themeStatus').textContent=nue==='dark'?'☀️':'🌙'; });
-        const colorDots=document.querySelectorAll('.color-dot'), savedColor=localStorage.getItem('colorTheme')||'default';
-        document.documentElement.setAttribute('data-color',savedColor);
-        colorDots.forEach(dot=>{ dot.classList.toggle('active',dot.dataset.color===savedColor); dot.addEventListener('click',()=>{ const col=dot.dataset.color; document.documentElement.setAttribute('data-color',col); localStorage.setItem('colorTheme',col); colorDots.forEach(d=>d.classList.remove('active')); dot.classList.add('active'); }); });
+        // Verificar copia automática diaria
+        const autoBackupEnabled = localStorage.getItem('auto_backup') === 'true';
+        const lastBackup = localStorage.getItem('last_auto_backup');
+        if (autoBackupEnabled && (!lastBackup || (new Date() - new Date(lastBackup)) > 24 * 60 * 60 * 1000)) {
+            setTimeout(async () => {
+                await storage.exportData();
+                localStorage.setItem('last_auto_backup', new Date().toISOString());
+                console.log('✅ Copia automática diaria realizada');
+            }, 5000);
+        }
     </script>
-    <style>
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
-        .switch input { opacity:0; width:0; height:0; }
-        .slider { position: absolute; cursor: pointer; top:0; left:0; right:0; bottom:0; background:#ccc; transition:0.4s; border-radius:24px; }
-        .slider:before { position: absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:0.4s; border-radius:50%; }
-        input:checked + .slider { background: var(--primary); }
-        input:checked + .slider:before { transform: translateX(26px); }
-        .danger-zone { border: 2px solid var(--danger); background: rgba(239,68,68,0.1); }
-    </style>
 </body>
 </html>
